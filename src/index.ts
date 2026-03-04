@@ -345,6 +345,111 @@ const apps: AppShortcuts[] = [
       'win-shift':{},
     },
   },
+  {
+    id: 'terminal', name: 'Terminal', color: '#2e3436', platforms: ['mac'],
+    icon: `<svg viewBox="0 0 24 24" fill="white"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zm1 4l5 4-5 4m6 0h5" stroke="white" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+    mac: {
+      'cmd':{N:'New window',T:'New tab',D:'Split pane',K:'Clear to previous mark'},
+      'cmd-shift':{D:'Close split pane',I:'Edit title',M:'Insert bookmark'},
+      'cmd-opt':{},
+      'cmd-ctrl':{},
+      'cmd-ctrl-shift':{},
+    },
+    win: {},
+  },
+  {
+    id: 'iterm', name: 'iTerm2', color: '#2bbc4a', platforms: ['mac'],
+    icon: `<svg viewBox="0 0 24 24" fill="white"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zm1 4l5 4-5 4m6 0h5" stroke="white" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+    mac: {
+      'cmd':{D:'Split vertically',T:'New tab',N:'New window',K:'Clear buffer',W:'Close tab'},
+      'cmd-shift':{D:'Split horizontally',Return:'Maximize pane',M:'Mark location',J:'Jump to mark'},
+      'cmd-opt':{Up:'Navigate up pane',Down:'Navigate down pane',Left:'Navigate left pane',Right:'Navigate right pane'},
+      'cmd-ctrl':{},
+      'cmd-ctrl-shift':{},
+    },
+    win: {},
+  },
+  {
+    id: 'warp', name: 'Warp', color: '#01a4ff', platforms: ['mac'],
+    icon: `<svg viewBox="0 0 24 24" fill="white"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zm1 4l5 4-5 4m6 0h5" stroke="white" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+    mac: {
+      'cmd':{D:'Split right',K:'Clear blocks',P:'Command palette',O:'File search','/':'Keyboard shortcuts',B:'Bookmark block'},
+      'cmd-shift':{D:'Split down',Return:'Maximize pane',C:'Copy command',P:'Navigation palette',T:'Reopen closed tab',K:'Clear selected lines'},
+      'cmd-opt':{Up:'Switch pane up',Down:'Switch pane down',Left:'Switch pane left',Right:'Switch pane right'},
+      'cmd-ctrl':{},
+      'cmd-ctrl-shift':{},
+    },
+    win: {},
+  },
+  {
+    id: 'firefox', name: 'Firefox', color: '#ff7139', platforms: ['mac','win'],
+    icon: `<svg viewBox="0 0 24 24" fill="white"><circle cx="12" cy="12" r="10" fill="none" stroke="white" stroke-width="2"/><path d="M12 2c1.5 3 1 6-.5 8 2-1 4-1 5.5.5A8 8 0 0 1 12 20a8 8 0 0 1-7-12c1.5 2 3.5 3 5.5 2.5C9.5 8 10 5 12 2z" fill="white" opacity="0.9"/></svg>`,
+    mac: {
+      'cmd':{K:'Focus search box',L:'Address bar',D:'Bookmark page',B:'Bookmarks',H:'History'},
+      'cmd-shift':{T:'Reopen tab',H:'History sidebar',D:'Bookmark all tabs',B:'Toggle sidebar',R:'Reader view','\\':'Tab overview'},
+      'cmd-opt':{I:'DevTools',K:'Web Console',J:'Browser Console',Z:'Debugger',S:'Style Editor'},
+      'cmd-ctrl':{F:'Fullscreen'},
+      'cmd-ctrl-shift':{I:'Browser Toolbox'},
+    },
+    win: {
+      'win':{},
+      'ctrl':{K:'Focus search box',L:'Address bar',D:'Bookmark page',B:'Bookmarks',H:'History'},
+      'ctrl-shift':{T:'Reopen tab',I:'DevTools',K:'Web Console',J:'Browser Console',P:'Private window',D:'Bookmark all tabs',B:'Toggle sidebar'},
+      'ctrl-alt':{M:'Device Mode'},
+      'win-ctrl':{},
+      'win-shift':{},
+    },
+  },
+  {
+    id: 'safari', name: 'Safari', color: '#006cff', platforms: ['mac'],
+    icon: `<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="white" stroke-width="2"/><path d="M16.5 7.5l-2 7-7 2 2-7 7-2z" fill="white" opacity="0.9"/></svg>`,
+    mac: {
+      'cmd':{F:'Find on page',L:'Smart Search field'},
+      'cmd-shift':{H:'Go to homepage',T:'Reopen last tab',D:'Add to Reading List',R:'Open Reader','\\':'Tab overview'},
+      'cmd-opt':{},
+      'cmd-ctrl':{'1':'Bookmarks sidebar','2':'Reading List sidebar'},
+      'cmd-ctrl-shift':{},
+    },
+    win: {},
+  },
+  {
+    id: 'discord', name: 'Discord', color: '#5865f2', platforms: ['mac','win'],
+    icon: `<svg viewBox="0 0 24 24" fill="white"><path d="M20.3 4.7a18.6 18.6 0 0 0-4.6-1.4 12 12 0 0 0-.6 1.2 17.2 17.2 0 0 0-5.1 0A12 12 0 0 0 9.3 3.3a18.6 18.6 0 0 0-4.6 1.4C1.2 10 .3 15.2.8 20.3a18.8 18.8 0 0 0 5.7 2.9 14 14 0 0 0 1.2-1.9 12 12 0 0 1-1.9-.9l.5-.4a13.3 13.3 0 0 0 11.4 0l.5.4a12 12 0 0 1-1.9.9 14 14 0 0 0 1.2 1.9 18.8 18.8 0 0 0 5.7-2.9c.6-6-1-11.1-4.1-15.6zM8 17c-1.3 0-2.4-1.2-2.4-2.7S6.6 11.7 8 11.7s2.5 1.2 2.4 2.6c0 1.5-1.1 2.7-2.4 2.7zm8 0c-1.3 0-2.4-1.2-2.4-2.7S14.6 11.7 16 11.7s2.5 1.2 2.4 2.6c0 1.5-1 2.7-2.4 2.7z" opacity="0.95"/></svg>`,
+    mac: {
+      'cmd':{K:'Quick switcher',P:'Toggle pins',U:'Member list',E:'Emoji picker','/':'Keyboard shortcuts'},
+      'cmd-shift':{N:'Create/join server',M:'Mute microphone',D:'Toggle deafen',U:'Upload file'},
+      'cmd-opt':{Up:'Previous server',Down:'Next server'},
+      'cmd-ctrl':{},
+      'cmd-ctrl-shift':{},
+    },
+    win: {
+      'win':{},
+      'ctrl':{K:'Quick switcher',F:'Search channel',E:'Emoji picker',U:'Member list','/':'Keyboard shortcuts'},
+      'ctrl-shift':{N:'Create/join server',M:'Mute microphone',D:'Toggle deafen',U:'Upload file'},
+      'ctrl-alt':{Up:'Previous server',Down:'Next server'},
+      'win-ctrl':{},
+      'win-shift':{},
+    },
+  },
+  {
+    id: 'superhuman', name: 'Superhuman', color: '#7c5cfc', platforms: ['mac','win'],
+    icon: `<svg viewBox="0 0 24 24" fill="white"><path d="M13 3l8 9-8 9-2-2 5.5-6H3v-2h13.5L11 5l2-2z" opacity="0.95"/></svg>`,
+    mac: {
+      'cmd':{K:'Superhuman Command','/':'Search'},
+      'cmd-shift':{O:'To field',C:'CC field',B:'BCC field',F:'From field',S:'Edit subject',A:'Attach file'},
+      'cmd-opt':{},
+      'cmd-ctrl':{},
+      'cmd-ctrl-shift':{},
+    },
+    win: {
+      'win':{},
+      'ctrl':{K:'Superhuman Command','/':'Search'},
+      'ctrl-shift':{O:'To field',C:'CC field',B:'BCC field',F:'From field',S:'Edit subject',A:'Attach file'},
+      'ctrl-alt':{},
+      'win-ctrl':{},
+      'win-shift':{},
+    },
+  },
 ];
 
 // ─── All checkable keys ─────────────────────────────────────────
@@ -500,7 +605,7 @@ function createMcpServer(): McpServer {
     },
     async ({ platform, count, apps: appIds, preferred_modifier }) => {
       const combos = getCombos(platform);
-      const suggestions: Array<{ modifier_combo: string; key: string; modifier_label: string; ergo_rank: number }> = [];
+      const suggestions: Array<{ modifier_combo: string; key: string; modifier_label: string; ergo_rank: number; ergo: string; is_preferred: boolean }> = [];
 
       for (const combo of combos) {
         const ergoRank = SUGGEST_RANK[combo.id] ?? 99;
@@ -512,6 +617,8 @@ function createMcpServer(): McpServer {
               key,
               modifier_label: combo.tabLabel,
               ergo_rank: ergoRank,
+              ergo: combo.ergo,
+              is_preferred: combo.id === preferred_modifier,
             });
           }
         }
@@ -530,7 +637,49 @@ function createMcpServer(): McpServer {
         ...(appIds?.length ? [`Excluding conflicts with: ${appIds.join(', ')}`] : []),
         ...(preferred_modifier ? [`Preferred modifier: ${preferred_modifier}`] : []),
         '',
-        ...top.map((s, i) => `${i + 1}. **${s.modifier_label}+${s.key}** (\`${s.modifier_combo}\`)`)
+        ...top.map((s, i) => {
+          const reasons: string[] = [];
+          if (s.is_preferred) reasons.push('preferred modifier');
+          if (s.ergo_rank === 0) reasons.push('sweet spot combo');
+          else if (s.ergo_rank <= 2) reasons.push('good ergonomics');
+          else if (s.ergo_rank >= 4) reasons.push('heavy combo');
+          return `${i + 1}. **${s.modifier_label}+${s.key}** (\`${s.modifier_combo}\`) — ${s.ergo}${reasons.length ? ` _[${reasons.join(', ')}]_` : ''}`;
+        })
+      ].join('\n');
+      return { content: [{ type: 'text' as const, text }] };
+    },
+  );
+
+  // ── list_apps ──
+  server.tool(
+    'list_apps',
+    'List all available app IDs with their names and supported platforms. Use this to discover valid values for the `apps` parameter in other tools.',
+    {},
+    async () => {
+      const list = apps.map(a => ({ id: a.id, name: a.name, platforms: a.platforms }));
+      const text = [
+        '## Available apps',
+        '',
+        ...list.map(a => `- **${a.name}** (\`${a.id}\`) — ${a.platforms.join(', ')}`),
+      ].join('\n');
+      return { content: [{ type: 'text' as const, text }] };
+    },
+  );
+
+  // ── list_combos ──
+  server.tool(
+    'list_combos',
+    'List modifier combos for a given platform, with their IDs, labels, constituent modifiers, and ergonomics notes.',
+    {
+      platform: platformEnum,
+    },
+    async ({ platform }) => {
+      const combos = getCombos(platform);
+      const list = combos.map(c => ({ id: c.id, label: c.tabLabel, mods: c.mods, ergo: c.ergo }));
+      const text = [
+        `## Modifier combos for ${platform === 'mac' ? 'macOS' : 'Windows'}`,
+        '',
+        ...list.map(c => `- **${c.label}** (\`${c.id}\`) — mods: ${c.mods.join('+')} — ${c.ergo}`),
       ].join('\n');
       return { content: [{ type: 'text' as const, text }] };
     },

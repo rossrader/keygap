@@ -72,6 +72,7 @@
   .tab:hover { border-color: #4a4a6a; color: #bbb; }
   .tab.active { background: #2a2a5a; border-color: #5b7fff; color: #fff; }
   .tab kbd { font-family: inherit; font-size: 0.95em; }
+  .tab .badge { font-size: 0.65em; color: #2ecc71; margin-left: 0.3em; font-weight: 400; opacity: 0.8; }
 
   /* ── Stats ── */
   .stats {
@@ -394,6 +395,27 @@
     .k { height: 24px; font-size: 0.48rem; }
     .k .sub, .k .top-char { display: none; }
   }
+  @media (max-width: 480px) {
+    body { padding: 1rem 0.5rem 2rem; }
+    h1 { font-size: 1.5rem; }
+    .subtitle { font-size: 0.72rem; margin-bottom: 0.8rem; }
+    .keyboard-stage { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .keyboard-shell { min-width: 420px; }
+    .tab-bar { gap: 4px; }
+    .tab { padding: 0.35em 0.6em; font-size: 0.68rem; }
+    .stats { gap: 0.8rem; font-size: 0.7rem; }
+    .app-grid { gap: 12px 8px; }
+    .app-card { width: 58px; }
+    .iso-icon { width: 42px; height: 42px; }
+    .iso-top { width: 38px; height: 38px; }
+    .iso-icon svg { width: 22px; height: 22px; }
+    .app-label { font-size: 0.56rem; }
+    .callout-banner { font-size: 0.68rem; padding: 0.5em 0.7em; }
+    .legend { gap: 0.8rem; }
+    .legend-item { font-size: 0.6rem; }
+    .ergo-note { font-size: 0.64rem; }
+    .panel { width: 100vw; }
+  }
 </style>
 </head>
 <body>
@@ -491,6 +513,8 @@
 
     <h3>Available tools</h3>
     <ul>
+      <li><strong>list_apps</strong> &mdash; list all app IDs, names, and platforms</li>
+      <li><strong>list_combos</strong> &mdash; list modifier combos for a platform with labels and ergo notes</li>
       <li><strong>get_available_keys</strong> &mdash; list free keys for a modifier combo, optionally filtered by active apps</li>
       <li><strong>check_key</strong> &mdash; check if a specific combo is available and who claims it if not</li>
       <li><strong>suggest_hotkeys</strong> &mdash; suggest the best available combos given your constraints</li>
@@ -700,7 +724,7 @@ function buildTabs() {
   const combos = getCombos();
   const bar = document.getElementById('tabBar');
   bar.innerHTML = combos.map((mc, i) =>
-    `<div class="tab ${i===0?'active':''}" data-idx="${i}"><kbd>${mc.tabLabel}</kbd> + Key</div>`
+    `<div class="tab ${i===0?'active':''}" data-idx="${i}"><kbd>${mc.tabLabel}</kbd> + Key<span class="badge" data-badge="${i}"></span></div>`
   ).join('');
   bar.querySelectorAll('.tab').forEach(t => {
     t.addEventListener('click', () => {
@@ -709,6 +733,27 @@ function buildTabs() {
       t.classList.add('active');
       renderKeyboard();
     });
+  });
+}
+
+function updateTabBadges() {
+  const combos = getCombos();
+  const allKeyIds = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','0','1','2','3','4','5','6','7','8','9','`','-','=','[',']','\\',';',"'",',','.','/',
+    'F1','F2','F3','F4','F5','F6','F7','F8','F9','F10','F11','F12','Tab','Space','Delete','Return','Esc','Left','Right','Up','Down'];
+  combos.forEach((combo, i) => {
+    let free = 0;
+    for (const key of allKeyIds) {
+      let status = 'available';
+      if (combo.taken[key]) status = 'taken';
+      else if (combo.risky[key]) status = 'risky';
+      if (status === 'available' || status === 'risky') {
+        const claims = getAppClaims(key, combo.id);
+        if (claims.length > 0) status = 'app-claimed';
+      }
+      if (status === 'available') free++;
+    }
+    const badge = document.querySelector(`[data-badge="${i}"]`);
+    if (badge) badge.textContent = ` ${free}`;
   });
 }
 
@@ -846,14 +891,62 @@ function renderKeyboard() {
     const n = Object.keys(sc).length;
     el.textContent = n > 0 ? `${n} keys` : '';
   });
+
+  updateTabBadges();
+  pushHash();
+}
+
+// ═══════════════════════════════════════════════════
+// URL HASH STATE
+// ═══════════════════════════════════════════════════
+function pushHash() {
+  const combos = getCombos();
+  const comboId = combos[currentCombo]?.id || '';
+  const appStr = [...activeApps].sort().join(',');
+  const parts = [platform, appStr, comboId];
+  window.history.replaceState(null, '', '#' + parts.join('/'));
+}
+
+function restoreFromHash() {
+  const hash = location.hash.replace(/^#/, '');
+  if (!hash) return;
+  const [p, appStr, comboId] = hash.split('/');
+  if (p === 'mac' || p === 'win') {
+    platform = p;
+    const btns = document.querySelectorAll('.platform-btn');
+    btns.forEach(b => b.classList.toggle('active', b.dataset.platform === platform));
+    document.getElementById('platformSlider').classList.toggle('right', platform === 'win');
+  }
+  if (appStr) {
+    appStr.split(',').filter(Boolean).forEach(id => {
+      if (apps.find(a => a.id === id && a.platforms.includes(platform))) {
+        activeApps.add(id);
+      }
+    });
+  }
+  if (comboId) {
+    const combos = getCombos();
+    const idx = combos.findIndex(c => c.id === comboId);
+    if (idx >= 0) currentCombo = idx;
+  }
 }
 
 // ═══════════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════════
+restoreFromHash();
 initPlatformToggle();
 buildTabs();
 buildAppGrid();
+// Mark restored active apps in the grid
+activeApps.forEach(id => {
+  const card = document.querySelector(`.app-card[data-app="${id}"]`);
+  if (card) card.classList.add('active');
+});
+// Mark restored active tab
+document.querySelectorAll('.tab').forEach(t => {
+  t.classList.toggle('active', parseInt(t.dataset.idx) === currentCombo);
+});
 renderKeyboard();
 </script>
 </body>
