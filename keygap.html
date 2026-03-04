@@ -1,0 +1,1156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KeyGap — Hotkey Availability Explorer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif;
+    background: #111118;
+    color: #e0e0e0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1.5rem 1rem 2.5rem;
+    min-height: 100vh;
+  }
+
+  h1 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.9rem; font-weight: 700; margin-bottom: 0.3rem;
+    letter-spacing: -0.03em;
+    background: linear-gradient(135deg, #ffffff 0%, #a0b4ff 50%, #60ffa0 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .subtitle {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.82rem; color: #6a6a8a; margin-bottom: 1.2rem;
+    text-align: center; letter-spacing: -0.01em;
+  }
+
+  /* ── Platform toggle ── */
+  .platform-toggle {
+    display: flex; align-items: center; gap: 0;
+    background: #1a1a2e; border-radius: 10px; border: 1px solid #2a2a4a;
+    padding: 3px; margin-bottom: 1.1rem; position: relative; overflow: hidden;
+  }
+  .platform-btn {
+    padding: 0.5em 1.4em; border-radius: 8px; font-size: 0.82rem; font-weight: 600;
+    cursor: pointer; border: none; background: transparent; color: #666;
+    transition: color 0.25s ease; user-select: none; position: relative; z-index: 2;
+    font-family: 'Space Grotesk', sans-serif; display: flex; align-items: center; gap: 0.5em;
+  }
+  .platform-btn:hover { color: #aaa; }
+  .platform-btn.active { color: #fff; }
+  .platform-slider {
+    position: absolute; top: 3px; bottom: 3px; left: 3px;
+    width: calc(50% - 3px); border-radius: 7px;
+    background: linear-gradient(135deg, #2a2a5a, #1e3a5a);
+    border: 1px solid rgba(91,127,255,0.3);
+    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1;
+  }
+  .platform-slider.right {
+    transform: translateX(100%);
+  }
+  .platform-icon { font-size: 1.1em; }
+
+  /* ── Tab bar ── */
+  .tab-bar { display: flex; gap: 6px; margin-bottom: 1rem; flex-wrap: wrap; justify-content: center; }
+  .tab {
+    padding: 0.45em 0.9em; border-radius: 8px; font-size: 0.78rem; font-weight: 500;
+    cursor: pointer; border: 1px solid #2a2a4a; background: #1a1a2e; color: #888;
+    transition: all 0.15s ease; user-select: none;
+  }
+  .tab:hover { border-color: #4a4a6a; color: #bbb; }
+  .tab.active { background: #2a2a5a; border-color: #5b7fff; color: #fff; }
+  .tab kbd { font-family: inherit; font-size: 0.95em; }
+
+  /* ── Stats ── */
+  .stats {
+    display: flex; gap: 1.5rem; margin-bottom: 0.9rem; font-size: 0.78rem;
+    color: #888; justify-content: center; flex-wrap: wrap;
+  }
+  .stats .num { font-weight: 700; }
+  .stats .green { color: #2ecc71; }
+  .stats .orange { color: #e67e22; }
+  .stats .grey { color: #555; }
+  .stats .blue { color: #60a5fa; }
+
+  /* ── Keyboard container with transition ── */
+  .keyboard-stage {
+    position: relative; perspective: 800px;
+  }
+  .keyboard-shell {
+    background: #222230; border-radius: 14px; padding: 12px 14px 10px;
+    box-shadow: 0 4px 30px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.04);
+    border: 1px solid #333; width: fit-content; max-width: 100%; overflow: visible;
+    transition: opacity 0.3s ease, transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .keyboard-shell.wipe-out-left {
+    opacity: 0; transform: translateX(-60px) scale(0.97);
+    pointer-events: none;
+  }
+  .keyboard-shell.wipe-out-right {
+    opacity: 0; transform: translateX(60px) scale(0.97);
+    pointer-events: none;
+  }
+  .keyboard-shell.wipe-in-left {
+    animation: wipeInFromRight 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  }
+  .keyboard-shell.wipe-in-right {
+    animation: wipeInFromLeft 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  }
+  @keyframes wipeInFromRight {
+    from { opacity: 0; transform: translateX(60px) scale(0.97); }
+    to { opacity: 1; transform: translateX(0) scale(1); }
+  }
+  @keyframes wipeInFromLeft {
+    from { opacity: 0; transform: translateX(-60px) scale(0.97); }
+    to { opacity: 1; transform: translateX(0) scale(1); }
+  }
+
+  .kb-row { display: flex; gap: 3px; margin-bottom: 3px; }
+  .kb-row:first-child { margin-bottom: 7px; }
+  .kb-row:last-child { margin-bottom: 0; }
+
+  .k {
+    height: 36px; border-radius: 5px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    font-size: 0.68rem; font-weight: 600; cursor: default; position: relative;
+    transition: transform 0.1s ease, box-shadow 0.12s ease;
+    flex-shrink: 0; line-height: 1.15;
+  }
+  .k .sub { font-size: 0.48rem; font-weight: 400; opacity: 0.6; margin-top: 1px; }
+  .k .top-char { font-size: 0.5rem; font-weight: 400; opacity: 0.55; }
+  .k:hover { transform: scale(1.08); z-index: 5; }
+
+  .k.available {
+    background: linear-gradient(180deg, #1a7a42 0%, #156633 100%);
+    color: #3ddb78; border: 1px solid #2ecc71;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3), 0 0 8px rgba(46,204,113,0.12);
+  }
+  .k.available:hover { box-shadow: 0 0 16px rgba(46,204,113,0.35); }
+  .k.taken {
+    background: linear-gradient(180deg, #2a2a38 0%, #222230 100%);
+    color: #4a4a5a; border: 1px solid #333340;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  }
+  .k.risky {
+    background: linear-gradient(180deg, #5a3a1a 0%, #4a3015 100%);
+    color: #e67e22; border: 1px solid #c0651a;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3), 0 0 6px rgba(230,126,34,0.1);
+  }
+  .k.risky:hover { box-shadow: 0 0 16px rgba(230,126,34,0.3); }
+  .k.app-claimed {
+    background: linear-gradient(180deg, #1e3a6e 0%, #172d55 100%);
+    color: #60a5fa; border: 1px solid #3b82f6;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3), 0 0 8px rgba(59,130,246,0.15);
+  }
+  .k.app-claimed:hover { box-shadow: 0 0 16px rgba(59,130,246,0.4); }
+  .k.modifier {
+    background: linear-gradient(180deg, #1e1e2c 0%, #181824 100%);
+    color: #3a3a5a; border: 1px solid #2a2a3a; font-size: 0.55rem;
+  }
+  /* Spacer for F-key grouping */
+  .k-spacer { flex-shrink: 0; }
+  .k.modifier.active-mod {
+    background: linear-gradient(180deg, #2a2a5a 0%, #222248 100%);
+    color: #7b9fff; border: 1px solid #5b7fff;
+    box-shadow: 0 0 10px rgba(91,127,255,0.2);
+  }
+  .k .app-dots { position: absolute; bottom: 3px; display: flex; gap: 2px; }
+  .k .app-dot { width: 5px; height: 5px; border-radius: 50%; }
+
+  /* Tooltip — below by default */
+  .k[data-tooltip]:hover::after {
+    content: attr(data-tooltip); position: absolute; top: calc(100% + 7px);
+    left: 50%; transform: translateX(-50%); background: #0a0a16; color: #ddd;
+    padding: 5px 9px; border-radius: 6px; font-size: 0.62rem; font-weight: 400;
+    white-space: nowrap; border: 1px solid #3a3a5a; z-index: 20;
+    pointer-events: none; box-shadow: 0 4px 12px rgba(0,0,0,0.5); max-width: 280px;
+  }
+  .kb-row.row-bottom .k[data-tooltip]:hover::after {
+    top: auto; bottom: calc(100% + 7px);
+  }
+
+  .legend { display: flex; gap: 1.3rem; margin-top: 1rem; flex-wrap: wrap; justify-content: center; }
+  .legend-item { display: flex; align-items: center; gap: 0.35rem; font-size: 0.7rem; color: #888; }
+  .legend-swatch { width: 13px; height: 13px; border-radius: 3px; }
+  .sw-avail { background: #2ecc71; } .sw-risky { background: #e67e22; }
+  .sw-taken { background: #3a3a48; } .sw-app { background: #3b82f6; }
+
+  .ergo-note {
+    margin-top: 0.8rem; font-size: 0.72rem; color: #5a5a7a;
+    text-align: center; font-style: italic; max-width: 640px;
+  }
+
+  /* ── App Selector ── */
+  .app-section { margin-top: 1.6rem; width: 100%; max-width: 680px; }
+  .app-section-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #5a5a7a; text-align: center; margin-bottom: 0.9rem; font-weight: 600;
+  }
+  .app-grid {
+    display: grid; gap: 16px 12px; justify-content: center; justify-items: center;
+  }
+  .app-card {
+    width: 72px; cursor: pointer; user-select: none;
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    transition: transform 0.15s ease;
+  }
+  .app-card:hover { transform: translateY(-2px); }
+  .iso-icon {
+    width: 56px; height: 56px; position: relative;
+    transform: rotateX(12deg) rotateZ(-4deg);
+    transform-style: preserve-3d; perspective: 200px;
+    transition: transform 0.2s ease, filter 0.2s ease;
+    filter: saturate(0.4) brightness(0.6);
+  }
+  .app-card.active .iso-icon {
+    filter: saturate(1) brightness(1);
+    transform: rotateX(12deg) rotateZ(-4deg) translateY(-3px);
+  }
+  .app-card:hover .iso-icon { filter: saturate(0.8) brightness(0.85); }
+  .app-card.active:hover .iso-icon { filter: saturate(1) brightness(1.1); }
+  .iso-face { position: absolute; border-radius: 12px; }
+  .iso-top {
+    width: 52px; height: 52px; top: 0; left: 2px;
+    display: flex; align-items: center; justify-content: center;
+    z-index: 2; border-radius: 14px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+  }
+  .iso-right {
+    width: 52px; height: 8px; bottom: -4px; left: 5px;
+    border-radius: 0 0 10px 10px; z-index: 1; filter: brightness(0.5);
+  }
+  .iso-left {
+    width: 8px; height: 52px; top: 4px; left: -2px;
+    border-radius: 10px 0 0 10px; z-index: 1; filter: brightness(0.35);
+  }
+  .iso-icon svg {
+    width: 28px; height: 28px; position: relative; z-index: 3;
+    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));
+  }
+  .app-label { font-size: 0.62rem; color: #555; font-weight: 500; transition: color 0.15s; text-align: center; }
+  .app-card.active .app-label { color: #bbb; }
+  .app-card:hover .app-label { color: #999; }
+  .app-count { font-size: 0.55rem; color: #444; font-weight: 400; transition: color 0.15s; }
+  .app-card.active .app-count { color: #60a5fa; }
+
+  /* Mac-only badge */
+  .app-card.unavailable { opacity: 0.25; pointer-events: none; }
+  .app-card .platform-badge {
+    font-size: 0.5rem; color: #555; margin-top: -3px;
+  }
+
+  /* ── MCP Callout Banner ── */
+  .callout-banner {
+    display: flex; align-items: center; gap: 0.7em;
+    background: linear-gradient(135deg, #1a2744 0%, #1e2a4a 100%);
+    border: 1px solid rgba(91,127,255,0.25);
+    border-radius: 10px; padding: 0.6em 1em;
+    margin-bottom: 1rem; max-width: 520px;
+    font-size: 0.76rem; color: #99b3e6;
+    cursor: pointer; transition: border-color 0.2s, background 0.2s;
+  }
+  .callout-banner:hover {
+    border-color: rgba(91,127,255,0.5);
+    background: linear-gradient(135deg, #1e2e50 0%, #223456 100%);
+  }
+  .callout-banner .callout-icon { font-size: 1em; flex-shrink: 0; }
+  .callout-banner .callout-text { flex: 1; }
+  .callout-banner .callout-text strong { color: #c0d4ff; }
+  .callout-banner .callout-arrow { color: #5b7fff; font-size: 1.1em; flex-shrink: 0; }
+  .callout-banner .callout-dismiss {
+    background: none; border: none; color: #4a5a7a; font-size: 1.1em;
+    cursor: pointer; padding: 0 0 0 0.3em; line-height: 1;
+    transition: color 0.15s;
+  }
+  .callout-banner .callout-dismiss:hover { color: #8899bb; }
+  .callout-banner.hidden { display: none; }
+
+  /* ── Slide Panel ── */
+  .panel-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+    z-index: 100; opacity: 0; pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+  .panel-overlay.open { opacity: 1; pointer-events: all; }
+
+  .panel {
+    position: fixed; top: 0; right: 0; bottom: 0;
+    width: min(440px, 92vw); background: #16182a;
+    z-index: 101; transform: translateX(100%);
+    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow-y: auto; border-left: 1px solid #2a2a4a;
+    box-shadow: -8px 0 30px rgba(0,0,0,0.5);
+  }
+  .panel.open { transform: translateX(0); }
+
+  .panel-inner {
+    padding: 2rem 1.8rem 3rem;
+  }
+  .panel-close {
+    position: absolute; top: 1rem; right: 1rem;
+    background: none; border: 1px solid #2a2a4a; border-radius: 8px;
+    color: #666; font-size: 1rem; width: 32px; height: 32px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .panel-close:hover { border-color: #4a4a6a; color: #aaa; }
+
+  .panel h2 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.3rem; font-weight: 700; color: #fff;
+    margin-bottom: 1.2rem; letter-spacing: -0.02em;
+  }
+  .panel h3 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.85rem; font-weight: 600; color: #8899cc;
+    text-transform: uppercase; letter-spacing: 0.06em;
+    margin: 1.5rem 0 0.6rem;
+  }
+  .panel h3:first-of-type { margin-top: 0.5rem; }
+  .panel p {
+    font-size: 0.82rem; color: #99a3b8; line-height: 1.65;
+    margin-bottom: 0.8rem;
+  }
+  .panel a { color: #7b9fff; text-decoration: none; }
+  .panel a:hover { text-decoration: underline; }
+
+  .panel .code-block {
+    background: #0d0f1a; border: 1px solid #2a2a4a; border-radius: 8px;
+    padding: 0.8em 1em; font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 0.74rem; color: #a0c4ff; margin: 0.6rem 0 1rem;
+    position: relative; overflow-x: auto; line-height: 1.6;
+    word-break: break-all;
+  }
+  .panel .code-block .copy-btn {
+    position: absolute; top: 6px; right: 6px;
+    background: #1a1e30; border: 1px solid #2a2a4a; border-radius: 5px;
+    color: #667; font-size: 0.62rem; padding: 3px 8px;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .panel .code-block .copy-btn:hover { border-color: #5b7fff; color: #aaa; }
+
+  .panel .example-prompt {
+    background: #0d0f1a; border-left: 3px solid #5b7fff;
+    padding: 0.6em 0.9em; border-radius: 0 6px 6px 0;
+    font-size: 0.76rem; color: #8899cc; margin: 0.4rem 0;
+    font-style: italic;
+  }
+
+  .panel ul {
+    list-style: none; padding: 0; margin: 0.4rem 0 0.8rem;
+  }
+  .panel li {
+    font-size: 0.78rem; color: #8899bb; padding: 0.3em 0;
+    padding-left: 1.2em; position: relative;
+  }
+  .panel li::before {
+    content: '→'; position: absolute; left: 0; color: #5b7fff;
+  }
+
+  /* ── Footer ── */
+  .site-footer {
+    margin-top: 2.5rem; padding: 1.2rem 0 0.5rem;
+    border-top: 1px solid #1e1e30;
+    display: flex; gap: 1.5rem; align-items: center;
+    justify-content: center; flex-wrap: wrap;
+  }
+  .footer-link {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.72rem; color: #4a5a7a; text-decoration: none;
+    cursor: pointer; transition: color 0.15s; font-weight: 500;
+    letter-spacing: 0.02em;
+  }
+  .footer-link:hover { color: #8899bb; }
+  .footer-sep { color: #2a2a3a; font-size: 0.6rem; }
+  .footer-credit {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.72rem; color: #3a4a6a; font-weight: 500;
+  }
+  .footer-credit a { color: #5a6a9a; text-decoration: none; transition: color 0.15s; }
+  .footer-credit a:hover { color: #8899cc; }
+
+  @media (max-width: 740px) {
+    .keyboard-shell { padding: 8px 8px 6px; border-radius: 10px; }
+    .kb-row { gap: 2px; margin-bottom: 2px; }
+    .k { height: 30px; font-size: 0.58rem; border-radius: 4px; }
+    .k .sub { font-size: 0.42rem; } .k .top-char { font-size: 0.42rem; }
+    .app-card { width: 64px; } .iso-icon { width: 48px; height: 48px; }
+    .iso-top { width: 44px; height: 44px; }
+  }
+  @media (max-width: 560px) {
+    .k { height: 24px; font-size: 0.48rem; }
+    .k .sub, .k .top-char { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<h1>KeyGap</h1>
+<p class="subtitle">Find available hotkey combos across platforms &amp; apps</p>
+
+<div class="platform-toggle" id="platformToggle">
+  <div class="platform-slider" id="platformSlider"></div>
+  <div class="platform-btn active" data-platform="mac">
+    <span class="platform-icon"></span> macOS
+  </div>
+  <div class="platform-btn" data-platform="win">
+    <span class="platform-icon">⊞</span> Windows
+  </div>
+</div>
+
+<div class="tab-bar" id="tabBar"></div>
+
+<div class="callout-banner" id="mcpBanner" onclick="openPanel('mcp')">
+  <span class="callout-icon">&#x1F50C;</span>
+  <span class="callout-text"><strong>New:</strong> Use KeyGap as an MCP tool in Claude</span>
+  <span class="callout-arrow">&rarr;</span>
+  <button class="callout-dismiss" onclick="event.stopPropagation(); dismissBanner()">&times;</button>
+</div>
+
+<div class="stats" id="stats"></div>
+<div class="keyboard-stage">
+  <div class="keyboard-shell" id="keyboard"></div>
+</div>
+
+<div class="legend">
+  <div class="legend-item"><div class="legend-swatch sw-avail"></div> Available</div>
+  <div class="legend-item"><div class="legend-swatch sw-risky"></div> Risky</div>
+  <div class="legend-item"><div class="legend-swatch sw-taken"></div> Taken (system)</div>
+  <div class="legend-item"><div class="legend-swatch sw-app"></div> Claimed by app</div>
+</div>
+<div class="ergo-note" id="ergoNote"></div>
+
+<div class="app-section">
+  <div class="app-section-title">Select your apps to see what's still free</div>
+  <div class="app-grid" id="appGrid"></div>
+</div>
+
+<div class="site-footer">
+  <span class="footer-link" onclick="openPanel('about')">About</span>
+  <span class="footer-sep">&middot;</span>
+  <span class="footer-link" onclick="openPanel('mcp')">MCP</span>
+  <span class="footer-sep">&middot;</span>
+  <span class="footer-credit">Built by <a href="https://rossrader.ca" target="_blank" rel="noopener">Ross Rader</a></span>
+</div>
+
+<!-- Overlay -->
+<div class="panel-overlay" id="panelOverlay" onclick="closePanel()"></div>
+
+<!-- About Panel -->
+<div class="panel" id="aboutPanel">
+  <button class="panel-close" onclick="closePanel()">&times;</button>
+  <div class="panel-inner">
+    <h2>About KeyGap</h2>
+    <p>Find the gaps in your keyboard shortcuts.</p>
+
+    <h3>Why this exists</h3>
+    <p>Every platform has a hidden goldmine of unclaimed modifier combos &mdash; but finding them means mentally cross-referencing the OS, your browser, your editor, your chat app, and everything else you run. KeyGap does that for you.</p>
+    <p>The main insight: on macOS, <strong>&#8984;&#8963; (Cmd+Ctrl)</strong> is almost entirely unclaimed. On Windows, <strong>Win+Ctrl</strong> is the equivalent sweet spot. Most people don't know this.</p>
+
+    <h3>How to use it</h3>
+    <p>Pick your platform at the top. Flip through modifier combos to see what the OS claims. Then toggle the apps you actually use &mdash; green keys are safe to claim for your own shortcuts, scripts, Raycast commands, or automation tools.</p>
+
+    <h3>A note on accuracy</h3>
+    <p>Shortcut data is sourced from official documentation and tested against current versions. Some apps let you rebind everything, and plugins or extensions can add their own shortcuts. If you spot something wrong, <a href="https://github.com/rossrader/keygap" target="_blank" rel="noopener">open an issue or PR</a>.</p>
+  </div>
+</div>
+
+<!-- MCP Panel -->
+<div class="panel" id="mcpPanel">
+  <button class="panel-close" onclick="closePanel()">&times;</button>
+  <div class="panel-inner">
+    <h2>KeyGap MCP</h2>
+    <p>Query keyboard shortcut availability directly from Claude. No need to open the website &mdash; just ask.</p>
+
+    <h3>Endpoint</h3>
+    <div class="code-block">
+      <span id="mcpUrl">https://keygap.app/mcp</span>
+      <button class="copy-btn" onclick="copyMcpUrl()">Copy</button>
+    </div>
+
+    <h3>Setup</h3>
+    <p>In Claude, go to <strong>Settings &rarr; MCP Servers</strong> and add the URL above. That's it &mdash; Claude will discover the available tools automatically.</p>
+
+    <h3>Try asking Claude</h3>
+    <div class="example-prompt">"What Cmd+Ctrl combos are free if I use Chrome and Slack?"</div>
+    <div class="example-prompt">"I need 4 hotkeys that won't conflict with VS Code or Figma"</div>
+    <div class="example-prompt">"Is Ctrl+Shift+K taken by anything on Windows?"</div>
+
+    <h3>Available tools</h3>
+    <ul>
+      <li><strong>get_available_keys</strong> &mdash; list free keys for a modifier combo, optionally filtered by active apps</li>
+      <li><strong>check_key</strong> &mdash; check if a specific combo is available and who claims it if not</li>
+      <li><strong>suggest_hotkeys</strong> &mdash; suggest the best available combos given your constraints</li>
+    </ul>
+
+    <h3>How it works</h3>
+    <p>The same shortcut database that powers the visual keyboard above is served via <a href="https://modelcontextprotocol.io" target="_blank" rel="noopener">MCP</a> at the endpoint above. Browser visitors get the interactive UI; MCP clients get structured data. One source of truth, two interfaces.</p>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════
+// PANELS & BANNER
+// ═══════════════════════════════════════════════════
+function openPanel(which) {
+  closePanel();
+  document.getElementById('panelOverlay').classList.add('open');
+  document.getElementById(which + 'Panel').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closePanel() {
+  document.getElementById('panelOverlay').classList.remove('open');
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('open'));
+  document.body.style.overflow = '';
+}
+function dismissBanner() {
+  document.getElementById('mcpBanner').classList.add('hidden');
+}
+function copyMcpUrl() {
+  const url = document.getElementById('mcpUrl').textContent;
+  navigator.clipboard.writeText(url).then(() => {
+    const btn = document.querySelector('.code-block .copy-btn');
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = 'Copy', 1500);
+  });
+}
+// Close panel on Escape
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closePanel(); });
+
+// ═══════════════════════════════════════════════════
+// KEYBOARD LAYOUTS
+// ═══════════════════════════════════════════════════
+const U = 36, GAP = 3, SPACER_W = 10;
+// Target width: 15U of keys + 13 gaps (based on number row: 13 std + 2U backspace)
+const TARGET_W = 15 * U + 13 * GAP; // 579px
+
+// F-row per platform — Mac is uniform, Windows groups in 4s
+// null entries = spacer
+const macFRow = [
+  ['Esc','esc',null,1],
+  ['F1','F1'],['F2','F2'],['F3','F3'],['F4','F4'],
+  ['F5','F5'],['F6','F6'],['F7','F7'],['F8','F8'],
+  ['F9','F9'],['F10','F10'],['F11','F11'],['F12','F12'],
+];
+const winFRow = [
+  ['Esc','Esc',null,1], null,
+  ['F1','F1'],['F2','F2'],['F3','F3'],['F4','F4'], null,
+  ['F5','F5'],['F6','F6'],['F7','F7'],['F8','F8'], null,
+  ['F9','F9'],['F10','F10'],['F11','F11'],['F12','F12'],
+];
+
+// Shared alpha rows — wMult > 1 marks "flex" keys that stretch to fill
+const sharedAlphaRows = [
+  // Number row: 13 std + Delete(2)
+  [['`','`','~'],['1','1','!'],['2','2','@'],['3','3','#'],['4','4','$'],['5','5','%'],['6','6','^'],['7','7','&'],['8','8','*'],['9','9','('],['0','0',')'], ['-','–','—'],['=','+','='],['Delete','delete',null,2]],
+  // QWERTY: Tab(1.5) + 12 std + Backslash(1.5)
+  [['Tab','tab',null,1.5],['Q','Q'],['W','W'],['E','E'],['R','R'],['T','T'],['Y','Y'],['U','U'],['I','I'],['O','O'],['P','P'],['[','[','{'],  [']',']','}'],['\\','\\','|',1.5]],
+  // Home: Caps(1.75) + 11 std + Return(2.25)
+  [['CapsLock','caps lock',null,1.75],['A','A'],['S','S'],['D','D'],['F','F'],['G','G'],['H','H'],['J','J'],['K','K'],['L','L'],[';',';',':'], ["'","'",'"'],['Return','return',null,2.25]],
+  // Shift: LShift(2.25) + 10 std + RShift(2.75)
+  [['LShift','shift',null,2.25],['Z','Z'],['X','X'],['C','C'],['V','V'],['B','B'],['N','N'],['M','M'],[',',',','<'],['.','.', '>'],['/','/','?'],['RShift','shift',null,2.75]],
+];
+
+// Platform-specific bottom rows — all non-arrow keys are flex
+const macBottomRow = [
+  ['Fn','fn',null,1],['LCtrl','⌃',null,1],['LOpt','⌥',null,1.25],['LCmd','⌘',null,1.5],
+  ['Space','',null,6.5],
+  ['RCmd','⌘',null,1.5],['ROpt','⌥',null,1.25],
+  ['Left','◀',null,1],['UpDown','▲▼',null,1],['Right','▶',null,1],
+];
+
+const winBottomRow = [
+  ['LCtrl','Ctrl',null,1.5],['LWin','⊞',null,1.25],['LAlt','Alt',null,1.25],
+  ['Space','',null,6],
+  ['RAlt','AltGr',null,1.25],['RWin','⊞',null,1.25],['Menu','☰',null,1.25],['RCtrl','Ctrl',null,1.5],
+  ['Left','◀',null,1],['UpDown','▲▼',null,1],['Right','▶',null,1],
+];
+
+// Compute pixel widths for a row so total = TARGET_W
+function computeRowWidths(row) {
+  const keys = row.filter(k => k !== null);
+  const spacerCount = row.filter(k => k === null).length;
+  // CSS gap applies between ALL flex children (keys + spacers)
+  const totalChildren = row.length;
+  const gapTotal = (totalChildren - 1) * GAP;
+  const spacerTotal = spacerCount * SPACER_W;
+  const availableForKeys = TARGET_W - gapTotal - spacerTotal;
+
+  let stdCount = 0, flexWeightTotal = 0;
+  const flexKeys = [];
+  keys.forEach(k => {
+    const w = k[3] || 1;
+    if (w <= 1) stdCount++;
+    else { flexWeightTotal += w; flexKeys.push(k); }
+  });
+
+  const widths = new Map();
+  if (flexWeightTotal === 0) {
+    // All standard (e.g. F-row) — distribute evenly
+    const base = Math.floor(availableForKeys / keys.length);
+    let leftover = availableForKeys - base * keys.length;
+    keys.forEach(k => {
+      const extra = leftover > 0 ? 1 : 0;
+      leftover--;
+      widths.set(k[0], base + extra);
+    });
+  } else {
+    const stdPixels = stdCount * U;
+    const remaining = availableForKeys - stdPixels;
+    // Assign flex keys, accumulate rounding error
+    let assigned = 0;
+    flexKeys.forEach((k, i) => {
+      const w = k[3];
+      if (i < flexKeys.length - 1) {
+        const px = Math.round(remaining * w / flexWeightTotal);
+        widths.set(k[0], px);
+        assigned += px;
+      } else {
+        // Last flex key absorbs rounding remainder
+        widths.set(k[0], remaining - assigned);
+      }
+    });
+    keys.forEach(k => {
+      if (!widths.has(k[0])) widths.set(k[0], U);
+    });
+  }
+  return widths;
+}
+
+const macModifierIds = new Set(['Fn','LCtrl','LOpt','LCmd','RCmd','ROpt','LShift','RShift','CapsLock']);
+const winModifierIds = new Set(['LCtrl','RCtrl','LWin','RWin','LAlt','RAlt','Menu','LShift','RShift','CapsLock']);
+
+// ═══════════════════════════════════════════════════
+// MODIFIER COMBOS — macOS
+// ═══════════════════════════════════════════════════
+const macCombos = [
+  {
+    id:'cmd', tabLabel:'⌘', mods:['cmd'],
+    ergo:'Easiest combo, but nearly everything is taken by macOS or universal app conventions.',
+    taken:{A:'Select All',B:'Bold',C:'Copy',D:'Bookmark/Define',E:'Search field',F:'Find',G:'Find Next',H:'Hide (system)',I:'Italic',J:'Smart quotes (some)',K:'Insert link',L:'Address bar',M:'Minimize (system)',N:'New',O:'Open',P:'Print',Q:'Quit (system)',R:'Refresh',S:'Save',T:'New tab',U:'Underline',V:'Paste',W:'Close (system)',X:'Cut',Z:'Undo','1':'Tab 1','2':'Tab 2','3':'Tab 3','4':'Tab 4','5':'Tab 5','6':'Tab 6','7':'Tab 7','8':'Tab 8','9':'Tab 9','0':'Zoom reset','`':'Cycle windows',',':'Preferences (system)','.':'Stop/Cancel','/':'Help menu','-':'Zoom out','=':'Zoom in','[':'Back (browsers)',']':'Forward (browsers)',Tab:'App Switcher (system)',Space:'Quick Look',Delete:'Move to Trash',Return:'Open/Confirm',Left:'Back',Right:'Forward',F1:'Show Help',F3:'Mission Control',F4:'Launchpad',F11:'Show Desktop'},
+    risky:{Y:'Redo (some)',';':'Spellcheck (some)',"'":"Smart quotes (Pages)",'\\':'Rarely used',Up:'Scroll top (some)',Down:'Scroll bottom (some)',Esc:'Front app menu',F7:'Media rewind',F8:'Play/Pause',F9:'Media forward'},
+  },
+  {
+    id:'cmd-shift', tabLabel:'⌘⇧', mods:['cmd','shift'],
+    ergo:'Easy to press. Some free slots, but browsers and productivity apps claim many.',
+    taken:{A:'Applications (Finder)',C:'Colors panel',D:'Desktop (Finder)',F:'Full search',G:'Find Previous',H:'Home (browsers)',I:'Inspect/Mail',L:'Downloads (Finder)',N:'New folder/Incognito',O:'Outline (some)',P:'Page Setup/Private',S:'Save As/Duplicate',T:'Reopen closed tab',V:'Paste & Match Style',Z:'Redo','3':'Screenshot (full)','4':'Screenshot (area)','5':'Screenshot options',Delete:'Empty Trash (Finder)','/':'Help (system)','=':'Zoom in (some)','-':'Zoom out (some)','[':'Prev tab (browsers)',']':'Next tab (browsers)'},
+    risky:{B:'Bookmarks bar (browsers)',E:'Sources (DevTools)',K:'Block quote/links',M:'Mute (Slack/Zoom)',R:'Hard reload (browsers)',X:'Strikethrough',J:'Downloads (Chrome)',U:'Uploads (some)','1':'View mode (some)','2':'View mode (some)','\\':'Rarely claimed'},
+  },
+  {
+    id:'cmd-opt', tabLabel:'⌘⌥', mods:['cmd','opt'],
+    ergo:'Good ergonomics — left thumb on ⌘, left ring on ⌥. Many open slots.',
+    taken:{D:'Toggle Dock (system)',H:'Hide Others (system)',Esc:'Force Quit (system)',F:'Find & Replace (many)'},
+    risky:{A:'Activity Monitor (some)',C:'Console (DevTools)',I:'DevTools (Chrome)',J:'Downloads (Chrome)',L:'Reformat (IDEs)',S:'Save As (some)',T:'Toolbar toggle',U:'View Source (browsers)',V:'Paste special','1':'Reader (Safari)','2':'History (Safari)',Left:'Switch tabs (some)',Right:'Switch tabs (some)','-':'Zoom out (some)','=':'Zoom in (some)'},
+  },
+  {
+    id:'cmd-ctrl', tabLabel:'⌘⌃', mods:['cmd','ctrl'],
+    ergo:'★ The sweet spot — almost entirely free. Left thumb on ⌘, left pinky on ⌃.',
+    taken:{F:'Fullscreen (system)',Q:'Lock Screen (system)',Space:'Emoji Picker (system)'},
+    risky:{D:'Definition popup (some)',R:'Recording (OBS/QuickTime)',M:'Mute (rare)'},
+  },
+  {
+    id:'cmd-ctrl-shift', tabLabel:'⌘⌃⇧', mods:['cmd','ctrl','shift'],
+    ergo:'Nearly everything open. Ergonomically heavy — three modifiers required.',
+    taken:{'3':'Screenshot → clipboard','4':'Screenshot → clipboard'},
+    risky:{'5':'Screenshot → clipboard (some)'},
+  },
+];
+
+// ═══════════════════════════════════════════════════
+// MODIFIER COMBOS — Windows
+// ═══════════════════════════════════════════════════
+const winCombos = [
+  {
+    id:'win', tabLabel:'Win', mods:['win'],
+    ergo:'Microsoft has claimed almost every letter here for OS features. The greediest modifier on either platform.',
+    taken:{A:'Action Center',B:'Taskbar focus (some)',C:'Chat/Copilot',D:'Show Desktop',E:'File Explorer',F:'Feedback Hub',G:'Game Bar',H:'Dictation',I:'Settings',K:'Bluetooth Connect',L:'Lock Screen',M:'Minimize All',N:'Notifications',P:'Project/Display',Q:'Quick Settings',R:'Run',S:'Search',T:'Cycle taskbar apps',U:'Accessibility',V:'Clipboard History',W:'Widgets',X:'Power User Menu',Z:'Snap Layouts','1':'Taskbar app 1','2':'Taskbar app 2','3':'Taskbar app 3','4':'Taskbar app 4','5':'Taskbar app 5','6':'Taskbar app 6','7':'Taskbar app 7','8':'Taskbar app 8','9':'Taskbar app 9','0':'Taskbar app 10',Tab:'Task View',Space:'Input language',Left:'Snap left',Right:'Snap right',Up:'Maximize',Down:'Restore/Minimize',',':'Peek at desktop','.':'Emoji panel',';':'Emoji panel (alt)','=':'Magnifier zoom in','-':'Magnifier zoom out',Esc:'Magnifier off',Return:'Narrator',F4:'Close virtual desktop'},
+    risky:{Y:'Rarely used',O:'Rotate (tablet)',J:'Focus Windows (some)','`':'Cycle windows (some)'},
+  },
+  {
+    id:'ctrl', tabLabel:'Ctrl', mods:['ctrl'],
+    ergo:'The primary modifier — equivalent to ⌘ on Mac. Almost entirely claimed.',
+    taken:{A:'Select All',B:'Bold',C:'Copy',D:'Bookmark/Address',E:'Search',F:'Find',G:'Find Next',H:'Replace',I:'Italic',K:'Insert link',L:'Address bar (browsers)',N:'New',O:'Open',P:'Print',R:'Refresh',S:'Save',T:'New tab',U:'Underline',V:'Paste',W:'Close tab',X:'Cut',Y:'Redo',Z:'Undo','1':'Tab 1','2':'Tab 2','3':'Tab 3','4':'Tab 4','5':'Tab 5','6':'Tab 6','7':'Tab 7','8':'Tab 8','9':'Last tab','0':'Tab 10/Zoom reset',Tab:'Switch window (some)','=':'Zoom in','-':'Zoom out','[':'Back',']':'Forward','/':'Help (some)',F4:'Close window',F5:'Refresh'},
+    risky:{J:'Downloads (browsers)',M:'Mute (some)','`':'Tab cycle (some)',';':'Spellcheck (some)',Delete:'Delete word',Esc:'Start menu',F1:'Help',F11:'Fullscreen',F12:'DevTools'},
+  },
+  {
+    id:'ctrl-shift', tabLabel:'Ctrl+Shift', mods:['ctrl','shift'],
+    ergo:'Easy reach. More open than Ctrl alone, but apps claim a fair number.',
+    taken:{N:'New incognito/window',T:'Reopen closed tab',Z:'Redo (alt)',Tab:'Switch tabs back',Esc:'Task Manager','=':'Zoom in (some)','-':'Zoom out (some)','[':'Prev tab',']':'Next tab',Delete:'Clear browsing (browsers)'},
+    risky:{B:'Bookmarks bar (browsers)',E:'Explorer/Sources',J:'Downloads (Chrome)',K:'Links/Block quote',M:'Mute (Slack/Zoom)',P:'Command palette (VS Code)',S:'Save As (some)',V:'Paste special',F:'Search in files (IDEs)',I:'DevTools (Chrome)',X:'Extensions (VS Code)'},
+  },
+  {
+    id:'ctrl-alt', tabLabel:'Ctrl+Alt', mods:['ctrl','alt'],
+    ergo:'Good availability. Note: some languages use Ctrl+Alt as AltGr for special characters.',
+    taken:{Delete:'Security screen (Ctrl+Alt+Del)'},
+    risky:{T:'Terminal (Linux habit)',F:'Find & Replace (some)',Tab:'Switch via preview',L:'Lock (some configs)'},
+  },
+  {
+    id:'win-ctrl', tabLabel:'Win+Ctrl', mods:['win','ctrl'],
+    ergo:'★ The sweet spot on Windows — very few system claims.',
+    taken:{D:'New virtual desktop',F4:'Close virtual desktop',Left:'Switch desktop left',Right:'Switch desktop right'},
+    risky:{F:'Feedback Hub'},
+  },
+  {
+    id:'win-shift', tabLabel:'Win+Shift', mods:['win','shift'],
+    ergo:'Lightly claimed by Windows. Good ergonomics.',
+    taken:{S:'Screenshot Snipping (system)',Left:'Move window to left monitor',Right:'Move window to right monitor'},
+    risky:{V:'Clipboard history (some builds)'},
+  },
+];
+
+// ═══════════════════════════════════════════════════
+// APP DEFINITIONS — with both platforms
+// ═══════════════════════════════════════════════════
+const apps = [
+  {
+    id: 'chrome', name: 'Chrome', color: '#4285f4', platforms: ['mac','win'],
+    icon: `<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="4.5" fill="white"/><circle cx="12" cy="12" r="3" fill="#4285f4"/><path d="M12 7.5A4.5 4.5 0 0 1 16.1 10H23a11 11 0 0 0-19.4-3.5L7.4 13A4.5 4.5 0 0 1 12 7.5z" fill="#ea4335"/><path d="M7.4 13A4.5 4.5 0 0 0 12 16.5l-3.8 6.6A11 11 0 0 1 1 10h6.9a4.5 4.5 0 0 0-.5 3z" fill="#34a853"/><path d="M12 16.5a4.5 4.5 0 0 0 4.1-2.5l3.8 6.5A11 11 0 0 1 8.2 23.1L12 16.5z" fill="#fbbc05"/></svg>`,
+    mac: {
+      'cmd':{Y:'History',D:'Bookmark',L:'Address bar'},
+      'cmd-shift':{B:'Bookmarks bar',J:'Downloads',N:'Incognito',T:'Reopen tab',M:'Switch profile',Delete:'Clear data',W:'Close window'},
+      'cmd-opt':{I:'DevTools',J:'JS Console',U:'View source',C:'Console',B:'Bookmark mgr'},
+      'cmd-ctrl':{F:'Fullscreen'},
+      'cmd-ctrl-shift':{},
+    },
+    win: {
+      'win':{},
+      'ctrl':{Y:'History',D:'Bookmark',L:'Address bar',J:'Downloads',H:'History'},
+      'ctrl-shift':{B:'Bookmarks bar',J:'Downloads',N:'Incognito',T:'Reopen tab',M:'Switch profile',Delete:'Clear data',W:'Close window',I:'DevTools'},
+      'ctrl-alt':{},
+      'win-ctrl':{},
+      'win-shift':{},
+    },
+  },
+  {
+    id: 'slack', name: 'Slack', color: '#611f69', platforms: ['mac','win'],
+    icon: `<svg viewBox="0 0 24 24" fill="white"><path d="M6.5 2a2 2 0 0 0 0 4h2V4a2 2 0 0 0-2-2zM2 8.5a2 2 0 0 0 4 0v-2H4a2 2 0 0 0-2 2zm15.5-2a2 2 0 0 0 0-4h-2v2a2 2 0 0 0 2 2zM13.5 2a2 2 0 0 0-4 0v2h2a2 2 0 0 0 2-2zM22 8.5a2 2 0 0 0-4 0v2h2a2 2 0 0 0 2-2zm-4 9a2 2 0 0 0 4 0v-2h-2a2 2 0 0 0-2 2zM2 15.5a2 2 0 0 0 4 0v-2H4a2 2 0 0 0-2 2zm8.5 6.5a2 2 0 0 0 0-4h-2v2a2 2 0 0 0 2 2zm6-4a2 2 0 0 0-4 0v2h2a2 2 0 0 0 2-2z" opacity="0.9"/></svg>`,
+    mac: {
+      'cmd':{K:'Quick switcher','/':'Keyboard shortcuts',U:'Upload file'},
+      'cmd-shift':{K:'Browse DMs',M:'Mentions & reactions',A:'All Unreads',Y:'Set status',D:'Do Not Disturb',Return:'Snippet','\\':'Toggle sidebar',T:'Threads',F:'Search in convo'},
+      'cmd-opt':{Right:'Next channel',Left:'Prev channel',Up:'Next unread',Down:'Prev unread'},
+      'cmd-ctrl':{},
+      'cmd-ctrl-shift':{},
+    },
+    win: {
+      'win':{},
+      'ctrl':{K:'Quick switcher','/':'Keyboard shortcuts',U:'Upload file'},
+      'ctrl-shift':{K:'Browse DMs',M:'Mentions & reactions',A:'All Unreads',Y:'Set status',D:'DND',Return:'Snippet','\\':'Toggle sidebar',T:'Threads',F:'Search in convo'},
+      'ctrl-alt':{},
+      'win-ctrl':{},
+      'win-shift':{},
+    },
+  },
+  {
+    id: 'vscode', name: 'VS Code', color: '#0078d4', platforms: ['mac','win'],
+    icon: `<svg viewBox="0 0 24 24" fill="white"><path d="M17.5 1L7 11.5l-4-3.2L1 9.5v5l2 1.2 4-3.2L17.5 23l5.5-2.5V3.5L17.5 1zM5 12l2.5-2L5 8v4zm12.5 6.5L10 12l7.5-6.5v13z" opacity="0.95"/></svg>`,
+    mac: {
+      'cmd':{B:'Toggle sidebar',J:'Toggle terminal','\\':'Split editor',K:'Chord prefix'},
+      'cmd-shift':{P:'Cmd palette',E:'Explorer',F:'Search files',G:'Source control',X:'Extensions',D:'Debug',H:'Replace in files',U:'Output',Y:'Debug console',K:'Delete line',L:'Select all occ.',M:'Problems',B:'Sidebar','`':'New terminal',N:'New window',O:'Open folder'},
+      'cmd-opt':{F:'Find & Replace','[':'Fold',']':'Unfold',K:'Keyboard shortcuts',Left:'Move editor left',Right:'Move editor right',B:'Breadcrumbs'},
+      'cmd-ctrl':{Left:'Editor to prev group',Right:'Editor to next group'},
+      'cmd-ctrl-shift':{},
+    },
+    win: {
+      'win':{},
+      'ctrl':{B:'Toggle sidebar',J:'Toggle terminal','\\':'Split editor',K:'Chord prefix','`':'Terminal'},
+      'ctrl-shift':{P:'Cmd palette',E:'Explorer',F:'Search files',G:'Source control',X:'Extensions',D:'Debug',H:'Replace in files',U:'Output',Y:'Debug console',K:'Delete line',L:'Select all occ.',M:'Problems',B:'Sidebar','`':'New terminal',N:'New window',O:'Open folder'},
+      'ctrl-alt':{F:'Find & Replace','[':'Fold',']':'Unfold',Left:'Move editor left',Right:'Move editor right'},
+      'win-ctrl':{},
+      'win-shift':{},
+    },
+  },
+  {
+    id: 'figma', name: 'Figma', color: '#a259ff', platforms: ['mac','win'],
+    icon: `<svg viewBox="0 0 24 24" fill="white"><path d="M8 2a4 4 0 0 0 0 8h4V2H8z" fill="#f24e1e"/><path d="M12 2h4a4 4 0 0 1 0 8h-4V2z" fill="#ff7262"/><path d="M8 10a4 4 0 0 0 0 8h4v-8H8z" fill="#a259ff"/><path d="M16 10a4 4 0 1 1 0 8 4 4 0 0 1 0-8z" fill="#1abcfe"/><path d="M8 18a4 4 0 0 0 0 8h4v-8H8z" fill="#0acf83" opacity="0.9"/></svg>`,
+    mac: {
+      'cmd':{'\\':'Toggle UI',R:'Rename','/':'Quick actions',G:'Group',D:'Duplicate'},
+      'cmd-shift':{E:'Export',G:'Ungroup',H:'Flip horizontal',V:'Flip vertical',K:'Place image',O:'Outline stroke',L:'Lock layer','\\':'Layers',C:'Copy CSS',B:'Bold',R:'Rulers'},
+      'cmd-opt':{G:'Frame selection',C:'Copy SVG',T:'Pixel grid',P:'Pixel preview'},
+      'cmd-ctrl':{},
+      'cmd-ctrl-shift':{E:'Export selection'},
+    },
+    win: {
+      'win':{},
+      'ctrl':{'\\':'Toggle UI',R:'Rename','/':'Quick actions',G:'Group',D:'Duplicate'},
+      'ctrl-shift':{E:'Export',G:'Ungroup',H:'Flip horiz.',V:'Flip vert.',K:'Place image',O:'Outline stroke',L:'Lock layer','\\':'Layers',C:'Copy CSS',B:'Bold',R:'Rulers'},
+      'ctrl-alt':{G:'Frame selection',C:'Copy SVG',T:'Pixel grid',P:'Pixel preview'},
+      'win-ctrl':{},
+      'win-shift':{},
+    },
+  },
+  {
+    id: 'linear', name: 'Linear', color: '#5e6ad2', platforms: ['mac','win'],
+    icon: `<svg viewBox="0 0 24 24" fill="white"><path d="M3.3 14.4a10.5 10.5 0 0 0 6.3 6.3L3.3 14.4zm-.9-2.2A10.5 10.5 0 0 0 12 21.8L2.2 12zm.2-2.1l12.3 12.3a10.5 10.5 0 0 0 2.8-1.5L3.5 6.7A10.5 10.5 0 0 0 2 9.5l.6.6zm2.5-4.5L19.4 19.9a10.5 10.5 0 0 0 1.7-2.1L7.3 4a10.5 10.5 0 0 0-2.2 1.6zm4-2.3l12.6 12.6a10.5 10.5 0 0 0 .8-2.7L11.8 3.1c-.9.1-1.8.3-2.7.6l.1-.4zm4.8-.9l8 8a10.5 10.5 0 0 0-1.6-4.7L15.6 3a10.5 10.5 0 0 0-2.7-.2l.7.6zm4.7 1.8l3.4 3.4A10.5 10.5 0 0 0 18 3.3l-.5 1z" opacity="0.95"/></svg>`,
+    mac: {
+      'cmd':{K:'Command menu','.':'Change status'},
+      'cmd-shift':{C:'Copy issue ID','.':'Cycle status',',':'Cycle back',A:'Assign to me',P:'Priority',L:'Label',E:'Estimate',D:'Due date'},
+      'cmd-opt':{},
+      'cmd-ctrl':{},
+      'cmd-ctrl-shift':{},
+    },
+    win: {
+      'win':{},
+      'ctrl':{K:'Command menu','.':'Change status'},
+      'ctrl-shift':{C:'Copy issue ID','.':'Cycle status',',':'Cycle back',A:'Assign to me',P:'Priority',L:'Label',E:'Estimate',D:'Due date'},
+      'ctrl-alt':{},
+      'win-ctrl':{},
+      'win-shift':{},
+    },
+  },
+  {
+    id: 'notion', name: 'Notion', color: '#2d2d2d', platforms: ['mac','win'],
+    icon: `<svg viewBox="0 0 24 24" fill="white"><path d="M4.5 3.5L16.7 2l3.8.8c.5.3.5.6.2 1L19 5.2V19l-2.3 1.5c-.7.4-1 .4-1.7 0L6 15.5v5.2c0 .8-.3 1.2-1 1.3l-2.5-.3c-.6-.3-.7-.7-.7-1.3V5c0-.7.3-1.2 1-1.4l1.7-.1zm2.3 2.2v9l6.5 4V9.5l-6.5-3.8z" opacity="0.95"/></svg>`,
+    mac: {
+      'cmd':{E:'Inline code','/':'Commands','[':'Outdent',']':'Indent'},
+      'cmd-shift':{L:'Dark mode',H:'Highlight',M:'Comment',E:'Emoji',U:'Move up',D:'Move down','0':'Plain text','1':'H1','2':'H2','3':'H3','4':'Todo','5':'Bullets','6':'Numbers','7':'Toggle','8':'Code block','9':'New page',J:'Full page'},
+      'cmd-opt':{'1':'H1','2':'H2','3':'H3','4':'Todo','5':'H1','8':'Code','9':'Page link'},
+      'cmd-ctrl':{},
+      'cmd-ctrl-shift':{},
+    },
+    win: {
+      'win':{},
+      'ctrl':{E:'Inline code','/':'Commands','[':'Outdent',']':'Indent'},
+      'ctrl-shift':{L:'Dark mode',H:'Highlight',M:'Comment',E:'Emoji',U:'Move up',D:'Move down','0':'Plain text','1':'H1','2':'H2','3':'H3','4':'Todo','5':'Bullets','6':'Numbers','7':'Toggle','8':'Code block','9':'New page',J:'Full page'},
+      'ctrl-alt':{'1':'H1','2':'H2','3':'H3','4':'Todo','5':'H1','8':'Code','9':'Page link'},
+      'win-ctrl':{},
+      'win-shift':{},
+    },
+  },
+  {
+    id: 'arc', name: 'Arc', color: '#4a90d9', platforms: ['mac'],
+    icon: `<svg viewBox="0 0 24 24" fill="none"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10" stroke="white" stroke-width="3.5" stroke-linecap="round" opacity="0.95"/><circle cx="20" cy="5" r="2.5" fill="white" opacity="0.8"/></svg>`,
+    mac: {
+      'cmd':{D:'Pin tab',S:'Save to library',L:'URL bar'},
+      'cmd-shift':{C:'Copy clean URL',D:'Toggle sidebar',N:'Incognito',E:'Sidebar view',T:'Reopen tab',R:'Hard refresh'},
+      'cmd-opt':{N:'Little Arc window',I:'DevTools',R:'Force refresh'},
+      'cmd-ctrl':{N:'New window'},
+      'cmd-ctrl-shift':{},
+    },
+    win: {},
+  },
+  {
+    id: 'zoom', name: 'Zoom', color: '#2d8cff', platforms: ['mac','win'],
+    icon: `<svg viewBox="0 0 24 24" fill="white"><rect x="2" y="5" width="14" height="14" rx="3" fill="white" opacity="0.95"/><path d="M18 9l4-3v12l-4-3V9z" fill="white" opacity="0.8"/></svg>`,
+    mac: {
+      'cmd':{J:'Join meeting'},
+      'cmd-shift':{A:'Mute audio',V:'Start/stop video',S:'Screen share',H:'Chat',M:'Minimize',F:'Fullscreen',R:'Record',N:'Switch camera',W:'Gallery view',T:'Transfer'},
+      'cmd-opt':{},
+      'cmd-ctrl':{},
+      'cmd-ctrl-shift':{},
+    },
+    win: {
+      'win':{},
+      'ctrl':{},
+      'ctrl-shift':{A:'Mute audio',V:'Start/stop video',S:'Screen share',H:'Chat',F:'Fullscreen',R:'Record',W:'Gallery view'},
+      'ctrl-alt':{},
+      'win-ctrl':{},
+      'win-shift':{},
+    },
+  },
+  {
+    id: 'spotify', name: 'Spotify', color: '#1db954', platforms: ['mac','win'],
+    icon: `<svg viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.6 14.5c-.2.3-.5.4-.8.2-2.2-1.3-5-1.6-8.3-.9-.3.1-.6-.1-.7-.4-.1-.3.1-.6.4-.7 3.6-.8 6.7-.5 9.1 1 .3.2.4.6.3.8zm1.2-2.8c-.25.4-.7.5-1 .3-2.5-1.5-6.3-2-9.3-1.1-.4.1-.8-.1-.9-.4-.1-.4.1-.8.4-.9 3.4-1 7.5-.5 10.4 1.2.3.2.5.6.4.9zm.1-2.9C14.7 9 9 8.8 5.8 9.7c-.45.1-.9-.1-1.1-.6-.1-.5.1-.9.6-1.1C9 7 15.3 7.2 19.3 9.2c.4.2.6.8.3 1.2-.2.4-.7.6-1.1.4z" opacity="0.95"/></svg>`,
+    mac: {
+      'cmd':{L:'Search',N:'New playlist'},
+      'cmd-shift':{Left:'Prev track',Right:'Next track',Down:'Vol down',Up:'Vol up',W:'Close'},
+      'cmd-opt':{},
+      'cmd-ctrl':{},
+      'cmd-ctrl-shift':{},
+    },
+    win: {
+      'win':{},
+      'ctrl':{L:'Search',N:'New playlist'},
+      'ctrl-shift':{Left:'Prev track',Right:'Next track',Down:'Vol down',Up:'Vol up',W:'Close'},
+      'ctrl-alt':{},
+      'win-ctrl':{},
+      'win-shift':{},
+    },
+  },
+  {
+    id: 'raycast', name: 'Raycast', color: '#ff6363', platforms: ['mac'],
+    icon: `<svg viewBox="0 0 24 24" fill="none"><path d="M6.5 17.5L2 22M8.5 15.5l-4 4M12 15l-3 3M15 12l-3 3M15.5 8.5l-4 4M17.5 6.5l-4 4M22 2l-4.5 4.5" stroke="white" stroke-width="2.2" stroke-linecap="round" opacity="0.95"/></svg>`,
+    mac: {
+      'cmd':{Space:'Raycast (global hotkey)'},
+      'cmd-shift':{'.':'Clipboard history (global)',',':'Raycast settings',C:'Confetti (global)',V:'Clipboard paste (global)'},
+      'cmd-opt':{},
+      'cmd-ctrl':{N:'Floating notes (global)',R:'AI chat (global)',Space:'Window mgmt (some configs)'},
+      'cmd-ctrl-shift':{},
+    },
+    win: {},
+  },
+  {
+    id: '1password', name: '1Password', color: '#0572ec', platforms: ['mac','win'],
+    icon: `<svg viewBox="0 0 24 24" fill="white"><circle cx="12" cy="12" r="9" fill="none" stroke="white" stroke-width="2.2"/><rect x="9" y="8" width="6" height="8" rx="3" fill="none" stroke="white" stroke-width="2"/><line x1="12" y1="12" x2="12" y2="14" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>`,
+    mac: {
+      'cmd':{'\\':'Autofill (global)'},
+      'cmd-shift':{X:'Lock 1Password (global)',Space:'Quick Access (global)',L:'Lock (in app)'},
+      'cmd-opt':{'\\':'Fill & save (global)'},
+      'cmd-ctrl':{},
+      'cmd-ctrl-shift':{},
+    },
+    win: {
+      'win':{},
+      'ctrl':{'\\':'Autofill (global)'},
+      'ctrl-shift':{X:'Lock 1Password (global)',Space:'Quick Access (global)',L:'Lock (in app)'},
+      'ctrl-alt':{'\\':'Fill & save (global)'},
+      'win-ctrl':{},
+      'win-shift':{},
+    },
+  },
+  {
+    id: 'obsidian', name: 'Obsidian', color: '#7c3aed', platforms: ['mac','win'],
+    icon: `<svg viewBox="0 0 24 24" fill="none"><path d="M12.6 2.4l6.4 3.6c.3.2.5.5.6.8l.4 7.4c0 .3-.1.6-.3.9l-4.6 5.8c-.2.3-.6.5-1 .5l-5.2-.3c-.3 0-.6-.2-.8-.4L4.4 15c-.2-.3-.3-.6-.2-1l1.6-7.2c.1-.3.3-.6.6-.8L12 2.4c.2-.1.4-.1.6 0z" fill="white" opacity="0.95"/></svg>`,
+    mac: {
+      'cmd':{E:'Toggle edit/preview',P:'Command palette',O:'Quick open',',':'Settings',B:'Bold',I:'Italic',K:'Insert link',L:'Toggle checkbox',D:'Delete paragraph','/':'Toggle comment'},
+      'cmd-shift':{F:'Search & replace in files',D:'Create daily note',E:'Export PDF'},
+      'cmd-opt':{Left:'Navigate back',Right:'Navigate forward',F:'Toggle search'},
+      'cmd-ctrl':{},
+      'cmd-ctrl-shift':{},
+    },
+    win: {
+      'win':{},
+      'ctrl':{E:'Toggle edit/preview',P:'Command palette',O:'Quick open',',':'Settings',B:'Bold',I:'Italic',K:'Insert link',L:'Toggle checkbox',D:'Delete paragraph','/':'Toggle comment'},
+      'ctrl-shift':{F:'Search & replace in files',D:'Create daily note',E:'Export PDF'},
+      'ctrl-alt':{Left:'Navigate back',Right:'Navigate forward',F:'Toggle search'},
+      'win-ctrl':{},
+      'win-shift':{},
+    },
+  },
+];
+
+// ═══════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════
+let platform = 'mac';
+let currentCombo = 0;
+let activeApps = new Set();
+
+function getRows() {
+  const fRow = platform === 'mac' ? macFRow : winFRow;
+  const bottomRow = platform === 'mac' ? macBottomRow : winBottomRow;
+  return [fRow, ...sharedAlphaRows, bottomRow];
+}
+function getCombos() { return platform === 'mac' ? macCombos : winCombos; }
+function getModifierIds() { return platform === 'mac' ? macModifierIds : winModifierIds; }
+function isActiveMod(keyId, combo) {
+  const macMap = {LCmd:'cmd',RCmd:'cmd',LCtrl:'ctrl',LOpt:'opt',ROpt:'opt',LShift:'shift',RShift:'shift'};
+  const winMap = {LCtrl:'ctrl',RCtrl:'ctrl',LWin:'win',RWin:'win',LAlt:'alt',RAlt:'alt',LShift:'shift',RShift:'shift'};
+  const map = platform === 'mac' ? macMap : winMap;
+  return combo.mods.includes(map[keyId]);
+}
+
+// ═══════════════════════════════════════════════════
+// PLATFORM TOGGLE
+// ═══════════════════════════════════════════════════
+function initPlatformToggle() {
+  const btns = document.querySelectorAll('.platform-btn');
+  const slider = document.getElementById('platformSlider');
+  btns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const newPlatform = btn.dataset.platform;
+      if (newPlatform === platform) return;
+
+      const oldPlatform = platform;
+      platform = newPlatform;
+      currentCombo = 0;
+      activeApps.clear();
+
+      btns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      slider.classList.toggle('right', newPlatform === 'win');
+
+      // Wipe animation
+      const kb = document.getElementById('keyboard');
+      const direction = newPlatform === 'win' ? 'left' : 'right';
+      kb.classList.add(`wipe-out-${direction}`);
+
+      setTimeout(() => {
+        buildTabs();
+        buildAppGrid();
+        renderKeyboard();
+        kb.classList.remove(`wipe-out-${direction}`);
+        kb.classList.add(`wipe-in-${direction}`);
+        setTimeout(() => kb.classList.remove(`wipe-in-${direction}`), 450);
+      }, 300);
+    });
+  });
+}
+
+// ═══════════════════════════════════════════════════
+// TABS
+// ═══════════════════════════════════════════════════
+function buildTabs() {
+  const combos = getCombos();
+  const bar = document.getElementById('tabBar');
+  bar.innerHTML = combos.map((mc, i) =>
+    `<div class="tab ${i===0?'active':''}" data-idx="${i}"><kbd>${mc.tabLabel}</kbd> + Key</div>`
+  ).join('');
+  bar.querySelectorAll('.tab').forEach(t => {
+    t.addEventListener('click', () => {
+      currentCombo = parseInt(t.dataset.idx);
+      bar.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+      t.classList.add('active');
+      renderKeyboard();
+    });
+  });
+}
+
+// ═══════════════════════════════════════════════════
+// APP GRID
+// ═══════════════════════════════════════════════════
+function buildAppGrid() {
+  const grid = document.getElementById('appGrid');
+  const n = apps.length;
+
+  // Find best column count: prefer perfect rectangle, then allow 1 gap
+  function bestCols(count) {
+    for (const c of [5, 4, 3, 6]) { if (count % c === 0) return c; }
+    for (const c of [5, 4, 3, 6]) { if (count % c >= c - 1) return c; }
+    return 5; // fallback
+  }
+  const cols = bestCols(n);
+  grid.style.gridTemplateColumns = `repeat(${cols}, 72px)`;
+
+  grid.innerHTML = apps.map(app => {
+    const avail = app.platforms.includes(platform);
+    const unavailClass = avail ? '' : ' unavailable';
+    const badge = !avail ? `<div class="platform-badge">macOS only</div>` : '';
+    return `
+      <div class="app-card${unavailClass}" data-app="${app.id}" title="${app.name}">
+        <div class="iso-icon">
+          <div class="iso-left iso-face" style="background:${app.color}"></div>
+          <div class="iso-right iso-face" style="background:${app.color}"></div>
+          <div class="iso-top iso-face" style="background:${app.color}">${app.icon}</div>
+        </div>
+        <div class="app-label">${app.name}</div>
+        ${badge}
+        <div class="app-count" data-countfor="${app.id}"></div>
+      </div>`;
+  }).join('');
+  grid.querySelectorAll('.app-card:not(.unavailable)').forEach(card => {
+    card.addEventListener('click', () => {
+      const id = card.dataset.app;
+      if (activeApps.has(id)) { activeApps.delete(id); card.classList.remove('active'); }
+      else { activeApps.add(id); card.classList.add('active'); }
+      renderKeyboard();
+    });
+  });
+}
+
+// ═══════════════════════════════════════════════════
+// APP CLAIMS
+// ═══════════════════════════════════════════════════
+function getAppClaims(keyId, comboId) {
+  const claims = [];
+  for (const appId of activeApps) {
+    const app = apps.find(a => a.id === appId);
+    const platformData = app[platform] || {};
+    const shortcuts = platformData[comboId] || {};
+    if (shortcuts[keyId]) {
+      claims.push({ name: app.name, reason: shortcuts[keyId], color: app.color });
+    }
+  }
+  return claims;
+}
+
+// ═══════════════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════════════
+function renderKeyboard() {
+  const combos = getCombos();
+  const combo = combos[currentCombo];
+  const modIds = getModifierIds();
+  const kbRows = getRows();
+  const kb = document.getElementById('keyboard');
+  let availCount = 0, riskyCount = 0, takenCount = 0, appCount = 0, total = 0;
+
+  let html = '';
+  kbRows.forEach((row, rowIdx) => {
+    const rowClass = rowIdx >= 3 ? 'kb-row row-bottom' : 'kb-row';
+    html += `<div class="${rowClass}">`;
+    const widthMap = computeRowWidths(row);
+    row.forEach(keyDef => {
+      // null = spacer (for Windows F-row grouping)
+      if (keyDef === null) {
+        html += `<div class="k-spacer" style="width:${SPACER_W}px"></div>`;
+        return;
+      }
+      const [id, label, topChar] = keyDef;
+      const widthPx = widthMap.get(id) || U;
+
+      if (modIds.has(id)) {
+        const amod = isActiveMod(id, combo) ? ' active-mod' : '';
+        html += `<div class="k modifier${amod}" style="width:${widthPx}px">${topChar ? `<span class="top-char">${topChar}</span>` : ''}${label}</div>`;
+        return;
+      }
+
+      total++;
+      let state = 'available', tip = 'Likely available';
+      if (combo.taken[id]) { state = 'taken'; tip = combo.taken[id]; }
+      else if (combo.risky[id]) { state = 'risky'; tip = combo.risky[id]; }
+
+      const claims = getAppClaims(id, combo.id);
+      let dotsHtml = '';
+      if (claims.length > 0) {
+        if (state === 'available' || state === 'risky') {
+          state = 'app-claimed'; appCount++;
+          tip = claims.map(c => `${c.name}: ${c.reason}`).join(' · ');
+        } else {
+          tip += ' · Also: ' + claims.map(c => `${c.name}: ${c.reason}`).join(', ');
+        }
+        dotsHtml = '<div class="app-dots">' + claims.map(c => `<div class="app-dot" style="background:${c.color}"></div>`).join('') + '</div>';
+      }
+
+      if (state === 'available') availCount++;
+      else if (state === 'risky') riskyCount++;
+      else if (state === 'taken') takenCount++;
+
+      const topHtml = topChar ? `<span class="top-char">${topChar}</span>` : '';
+      html += `<div class="k ${state}" style="width:${widthPx}px" data-tooltip="${tip.replace(/"/g,'&quot;')}">${topHtml}${label}${dotsHtml}</div>`;
+    });
+    html += '</div>';
+  });
+  kb.innerHTML = html;
+
+  document.getElementById('stats').innerHTML = `
+    <div><span class="num green">${availCount}</span> available</div>
+    ${appCount > 0 ? `<div><span class="num blue">${appCount}</span> app-claimed</div>` : ''}
+    <div><span class="num orange">${riskyCount}</span> risky</div>
+    <div><span class="num grey">${takenCount}</span> taken</div>
+    <div>of ${total} assignable keys</div>
+  `;
+  document.getElementById('ergoNote').textContent = '⌨️ ' + combo.ergo;
+
+  apps.forEach(app => {
+    const el = document.querySelector(`[data-countfor="${app.id}"]`);
+    if (!el) return;
+    const platformData = app[platform] || {};
+    const sc = platformData[combo.id] || {};
+    const n = Object.keys(sc).length;
+    el.textContent = n > 0 ? `${n} keys` : '';
+  });
+}
+
+// ═══════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════
+initPlatformToggle();
+buildTabs();
+buildAppGrid();
+renderKeyboard();
+</script>
+</body>
+</html>
