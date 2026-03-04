@@ -1,6 +1,24 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
 # KeyGap
 
 KeyGap (keygap.app) is a keyboard shortcut availability tool. It helps people find which hotkey combos are actually free on their platform, given the apps they use.
+
+## Commands
+
+```bash
+npm install                # install dependencies (run first)
+npx wrangler dev           # local dev server at localhost:8787
+npx wrangler deploy        # deploy to production (keygap.app)
+```
+
+TypeScript is compiled by wrangler's built-in esbuild — no separate build step.
+
+## Current state
+
+The `keygap.html` file is the working UI artifact. The Worker infrastructure (`src/`, `package.json`, `wrangler.toml`) needs to be created per the architecture below. When scaffolding, extract the shortcut data from the `<script>` tag in `keygap.html` into `src/data.ts`.
 
 ## Architecture
 

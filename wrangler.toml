@@ -1,0 +1,13 @@
+name = "keygap"
+main = "src/index.ts"
+compatibility_date = "2025-03-04"
+compatibility_flags = ["nodejs_compat"]
+
+[[migrations]]
+tag = "v2"
+deleted_classes = ["KeyGapMCP"]
+
+[[rules]]
+type = "Text"
+globs = ["**/*.html"]
+fallthrough = false
