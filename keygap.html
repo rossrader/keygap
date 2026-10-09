@@ -330,7 +330,7 @@
 
     <div class="inspector" id="inspector">
       <p class="inspect-text" id="inspectText"></p>
-      <button type="button" class="btn" id="recorder" aria-pressed="false">Check a shortcut by pressing it</button>
+      <button type="button" class="btn" id="recorder" aria-pressed="false" title="Stops the browser acting on shortcuts while you test them">Block browser shortcuts</button>
     </div>
     <p class="record-help" id="recordHelp" hidden></p>
 
@@ -371,7 +371,7 @@
   <p>The main insight: on macOS, <strong>⌘⌃ (Cmd+Ctrl)</strong> is almost entirely unclaimed. On Windows, <strong>Win+Ctrl</strong> is the equivalent. Most people don't know this.</p>
 
   <h3>How to use it</h3>
-  <p>Pick your platform and the apps you use. Each tab is a modifier combination. Teal keys are free to claim for your own shortcuts, scripts, Raycast commands or automations. To check one shortcut, choose <strong>Check a shortcut by pressing it</strong> and press it.</p>
+  <p>Pick your platform and the apps you use. Each tab is a modifier combination. Teal keys are free to claim for your own shortcuts, scripts, Raycast commands or automations. To check one shortcut, just press it. If your browser reacts to it first, choose <strong>Block browser shortcuts</strong> and try again.</p>
 
   <h3>A note on accuracy</h3>
   <p>Shortcut data comes from official documentation. Some apps let you rebind everything, and plugins or extensions add their own shortcuts. If you spot something wrong, <a href="https://github.com/rossrader/keygap" target="_blank" rel="noopener">open an issue or pull request</a>.</p>
@@ -635,7 +635,7 @@ function renderInspector(key = state.pinned) {
   if (recording) return;
   $('inspectText').innerHTML = key
     ? describe(combo(), key).html
-    : `<span class="muted">Point at or tap a key to see what uses it.</span>`;
+    : `<span class="muted">Press any shortcut to check it, or point at a key.</span>`;
 }
 
 function renderAll() {
@@ -751,7 +751,7 @@ document.querySelectorAll('dialog.panel').forEach(d => {
 
 // ═══════════════════════════════════════════════════
 // RECORDER: press a shortcut to check it.
-// Armed only after an explicit click, because the page can't stop shortcuts like ⌘Q.
+// Always listening; the optional armed mode also blocks the browser's own handling and guards against ⌘W.
 // ═══════════════════════════════════════════════════
 const CODE_TO_KEY = { Minus: '-', Equal: '=', BracketLeft: '[', BracketRight: ']', Backslash: '\\', Semicolon: ';', Quote: "'",
   Comma: ',', Period: '.', Slash: '/', Backquote: '`', Space: 'Space', Enter: 'Return', NumpadEnter: 'Return',
@@ -789,9 +789,9 @@ function guardUnload(e) { e.preventDefault(); e.returnValue = ''; }
 function startRecording() {
   recording = true;
   $('recorder').setAttribute('aria-pressed', 'true');
-  $('recorder').textContent = 'Stop checking';
+  $('recorder').textContent = 'Stop blocking';
   $('inspector').classList.add('listening');
-  setInspect(`<span class="muted">Listening. Try ${esc(bestLabel())} + any letter. Esc stops.</span>`);
+  setInspect(`<span class="muted">Blocking browser shortcuts. Try ${esc(bestLabel())} + any letter. Esc stops.</span>`);
   $('recordHelp').textContent = state.platform === 'mac'
     ? `⌘Q, ⌘W and ⌘H go straight to macOS or your browser, so they're taken. Click those keys instead to see why. If nothing happens when you press a shortcut, macOS or your browser already owns it.`
     : `Alt+F4, Win+L and Ctrl+Alt+Del go straight to Windows, so they're taken. Click those keys instead to see why. If nothing happens when you press a shortcut, Windows or your browser already owns it.`;
@@ -802,7 +802,7 @@ function stopRecording() {
   if (!recording) return;
   recording = false;
   $('recorder').setAttribute('aria-pressed', 'false');
-  $('recorder').textContent = 'Check a shortcut by pressing it';
+  $('recorder').textContent = 'Block browser shortcuts';
   $('inspector').classList.remove('listening');
   $('recordHelp').hidden = true;
   window.removeEventListener('beforeunload', guardUnload);
@@ -832,6 +832,8 @@ function checkPressed(e) {
   const { text, html } = describe(match, key);
   setInspect(html);
   $('announce').textContent = `${shortcut(match, key)}. ${text}`;
+  const box = $('inspector').getBoundingClientRect();
+  if (box.top < 0 || box.bottom > innerHeight) $('inspector').scrollIntoView({ block: 'nearest' });
   const cap = keysEl.querySelector(`.k[data-key="${CSS.escape(key)}"]`);
   if (cap) { cap.classList.remove('flash'); void cap.offsetWidth; cap.classList.add('flash'); }
 }
@@ -839,7 +841,14 @@ function checkPressed(e) {
 $('recorder').addEventListener('click', () => (recording ? stopRecording() : startRecording()));
 $('recorder').addEventListener('blur', stopRecording);
 window.addEventListener('keydown', e => {
-  if (!recording) return;
+  if (!recording) {
+    // Always listening, but hands-off: the browser still acts on the shortcut (⌘C still copies).
+    // Shift alone is left for Shift+Tab, and open panels keep their own keys.
+    if (!(e.metaKey || e.ctrlKey || e.altKey) || MOD_CODES.test(e.code) || e.repeat) return;
+    if (document.querySelector('dialog[open]')) return;
+    checkPressed(e);
+    return;
+  }
   if (e.key === 'Escape' && !e.metaKey && !e.ctrlKey && !e.altKey && !e.shiftKey) {
     e.preventDefault();
     stopRecording();
