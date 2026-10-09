@@ -9,3 +9,7 @@ routes = [{ pattern = "keygap.app", custom_domain = true }]
 type = "Text"
 globs = ["**/*.html"]
 fallthrough = true
+
+# Request logs and errors in the Cloudflare dashboard (Workers → keygap → Logs)
+[observability]
+enabled = true

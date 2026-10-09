@@ -5,7 +5,9 @@
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "node scripts/smoke.mjs",
+    "test:prod": "BASE_URL=https://keygap.app node scripts/smoke.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/server": "^2.0.0",

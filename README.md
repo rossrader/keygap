@@ -52,6 +52,8 @@ claude mcp add --transport http keygap https://keygap.app/mcp
 ```bash
 npm install              # install dependencies
 npx wrangler dev         # local dev → localhost:8787
+npm test                 # smoke test: data, page and MCP tools on a local Worker
+npm run test:prod        # same checks against keygap.app
 npx wrangler deploy      # deploy to keygap.app
 ```
 
