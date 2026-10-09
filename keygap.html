@@ -555,7 +555,7 @@ const winFRow = [
 // Shared alpha rows — wMult > 1 marks "flex" keys that stretch to fill
 const sharedAlphaRows = [
   // Number row: 13 std + Delete(2)
-  [['`','`','~'],['1','1','!'],['2','2','@'],['3','3','#'],['4','4','$'],['5','5','%'],['6','6','^'],['7','7','&'],['8','8','*'],['9','9','('],['0','0',')'], ['-','–','—'],['=','+','='],['Delete','delete',null,2]],
+  [['`','`','~'],['1','1','!'],['2','2','@'],['3','3','#'],['4','4','$'],['5','5','%'],['6','6','^'],['7','7','&'],['8','8','*'],['9','9','('],['0','0',')'], ['-','-','_'],['=','=','+'],['Delete','delete',null,2]],
   // QWERTY: Tab(1.5) + 12 std + Backslash(1.5)
   [['Tab','tab',null,1.5],['Q','Q'],['W','W'],['E','E'],['R','R'],['T','T'],['Y','Y'],['U','U'],['I','I'],['O','O'],['P','P'],['[','[','{'],  [']',']','}'],['\\','\\','|',1.5]],
   // Home: Caps(1.75) + 11 std + Return(2.25)
@@ -640,26 +640,26 @@ const macCombos = [
   {
     id:'cmd', tabLabel:'⌘', mods:['cmd'],
     ergo:'Easiest combo, but nearly everything is taken by macOS or universal app conventions.',
-    taken:{A:'Select All',B:'Bold',C:'Copy',D:'Bookmark/Define',E:'Search field',F:'Find',G:'Find Next',H:'Hide (system)',I:'Italic',J:'Smart quotes (some)',K:'Insert link',L:'Address bar',M:'Minimize (system)',N:'New',O:'Open',P:'Print',Q:'Quit (system)',R:'Refresh',S:'Save',T:'New tab',U:'Underline',V:'Paste',W:'Close (system)',X:'Cut',Z:'Undo','1':'Tab 1','2':'Tab 2','3':'Tab 3','4':'Tab 4','5':'Tab 5','6':'Tab 6','7':'Tab 7','8':'Tab 8','9':'Tab 9','0':'Zoom reset','`':'Cycle windows',',':'Preferences (system)','.':'Stop/Cancel','/':'Help menu','-':'Zoom out','=':'Zoom in','[':'Back (browsers)',']':'Forward (browsers)',Tab:'App Switcher (system)',Space:'Quick Look',Delete:'Move to Trash',Return:'Open/Confirm',Left:'Back',Right:'Forward',F1:'Show Help',F3:'Mission Control',F4:'Launchpad',F11:'Show Desktop'},
+    taken:{A:'Select All',B:'Bold',C:'Copy',D:'Bookmark/Define',E:'Search field',F:'Find',G:'Find Next',H:'Hide (system)',I:'Italic',J:'Smart quotes (some)',K:'Insert link',L:'Address bar',M:'Minimize (system)',N:'New',O:'Open',P:'Print',Q:'Quit (system)',R:'Refresh',S:'Save',T:'New tab',U:'Underline',V:'Paste',W:'Close (system)',X:'Cut',Z:'Undo','1':'Tab 1','2':'Tab 2','3':'Tab 3','4':'Tab 4','5':'Tab 5','6':'Tab 6','7':'Tab 7','8':'Tab 8','9':'Tab 9','0':'Zoom reset','`':'Cycle windows',',':'Preferences (system)','.':'Stop/Cancel','/':'Help menu','-':'Zoom out','=':'Zoom in','[':'Back (browsers)',']':'Forward (browsers)',Tab:'App Switcher (system)',Space:'Spotlight (system)',Delete:'Move to Trash',Return:'Open/Confirm',Left:'Back',Right:'Forward',F1:'Show Help',F3:'Mission Control',F4:'Launchpad',F11:'Show Desktop'},
     risky:{Y:'Redo (some)',';':'Spellcheck (some)',"'":"Smart quotes (Pages)",'\\':'Rarely used',Up:'Scroll top (some)',Down:'Scroll bottom (some)',Esc:'Front app menu',F7:'Media rewind',F8:'Play/Pause',F9:'Media forward'},
   },
   {
     id:'cmd-shift', tabLabel:'⌘⇧', mods:['cmd','shift'],
     ergo:'Easy to press. Some free slots, but browsers and productivity apps claim many.',
-    taken:{A:'Applications (Finder)',C:'Colors panel',D:'Desktop (Finder)',F:'Full search',G:'Find Previous',H:'Home (browsers)',I:'Inspect/Mail',L:'Downloads (Finder)',N:'New folder/Incognito',O:'Outline (some)',P:'Page Setup/Private',S:'Save As/Duplicate',T:'Reopen closed tab',V:'Paste & Match Style',Z:'Redo','3':'Screenshot (full)','4':'Screenshot (area)','5':'Screenshot options',Delete:'Empty Trash (Finder)','/':'Help (system)','=':'Zoom in (some)','-':'Zoom out (some)','[':'Prev tab (browsers)',']':'Next tab (browsers)'},
-    risky:{B:'Bookmarks bar (browsers)',E:'Sources (DevTools)',K:'Block quote/links',M:'Mute (Slack/Zoom)',R:'Hard reload (browsers)',X:'Strikethrough',J:'Downloads (Chrome)',U:'Uploads (some)','1':'View mode (some)','2':'View mode (some)','\\':'Rarely claimed'},
+    taken:{A:'Applications (Finder)',C:'Colors panel',D:'Desktop (Finder)',F:'Full search',G:'Find Previous',H:'Home (browsers)',I:'Inspect/Mail',L:'Downloads (Finder)',N:'New folder/Incognito',O:'Outline (some)',P:'Page Setup/Private',S:'Save As/Duplicate',T:'Reopen closed tab',V:'Paste & Match Style',Q:'Log out (system)',Z:'Redo','3':'Screenshot (full)','4':'Screenshot (area)','5':'Screenshot options',Delete:'Empty Trash (Finder)','/':'Help (system)','=':'Zoom in (some)','-':'Zoom out (some)','[':'Prev tab (browsers)',']':'Next tab (browsers)'},
+    risky:{B:'Bookmarks bar (browsers)',E:'Sources (DevTools)',K:'Block quote/links',M:'Mute (Slack/Zoom)',R:'Hard reload (browsers)',X:'Strikethrough',J:'Downloads (Chrome)',U:'Utilities folder (Finder)','.':'Show hidden files (Finder)','1':'View mode (some)','2':'View mode (some)','\\':'Rarely claimed'},
   },
   {
     id:'cmd-opt', tabLabel:'⌘⌥', mods:['cmd','opt'],
     ergo:'Good ergonomics — left thumb on ⌘, left ring on ⌥. Many open slots.',
-    taken:{D:'Toggle Dock (system)',H:'Hide Others (system)',Esc:'Force Quit (system)',F:'Find & Replace (many)'},
-    risky:{A:'Activity Monitor (some)',C:'Console (DevTools)',I:'DevTools (Chrome)',J:'Downloads (Chrome)',L:'Reformat (IDEs)',S:'Save As (some)',T:'Toolbar toggle',U:'View Source (browsers)',V:'Paste special','1':'Reader (Safari)','2':'History (Safari)',Left:'Switch tabs (some)',Right:'Switch tabs (some)','-':'Zoom out (some)','=':'Zoom in (some)'},
+    taken:{D:'Toggle Dock (system)',H:'Hide Others (system)',M:'Minimize all windows (system)',Esc:'Force Quit (system)',F5:'Accessibility shortcuts (system)',F:'Find & Replace (many)'},
+    risky:{A:'Activity Monitor (some)',C:'Console (DevTools)',I:'DevTools (Chrome)',J:'Downloads (Chrome)',L:'Reformat (IDEs)',S:'Save As (some)',T:'Toolbar toggle',U:'View Source (browsers)',V:'Paste special','1':'Reader (Safari)','2':'History (Safari)',Left:'Switch tabs (some)',Right:'Switch tabs (some)',W:'Close all windows (some)','8':'Zoom toggle (accessibility)','-':'Zoom out (some)','=':'Zoom in (some)'},
   },
   {
     id:'cmd-ctrl', tabLabel:'⌘⌃', mods:['cmd','ctrl'],
-    ergo:'★ The sweet spot — almost entirely free. Left thumb on ⌘, left pinky on ⌃.',
-    taken:{F:'Fullscreen (system)',Q:'Lock Screen (system)',Space:'Emoji Picker (system)'},
-    risky:{D:'Definition popup (some)',R:'Recording (OBS/QuickTime)',M:'Mute (rare)'},
+    ergo:'The sweet spot. Almost entirely free. Left thumb on ⌘, left pinky on ⌃.',
+    taken:{F:'Fullscreen (system)',Q:'Lock Screen (system)',Space:'Emoji Picker (system)',D:'Look Up (system)'},
+    risky:{A:'Make alias (Finder)',N:'New folder with selection (Finder)',T:'Add to sidebar (Finder)',R:'Recording (OBS/QuickTime)',M:'Mute (rare)'},
   },
   {
     id:'cmd-ctrl-shift', tabLabel:'⌘⌃⇧', mods:['cmd','ctrl','shift'],
@@ -682,8 +682,8 @@ const winCombos = [
   {
     id:'ctrl', tabLabel:'Ctrl', mods:['ctrl'],
     ergo:'The primary modifier — equivalent to ⌘ on Mac. Almost entirely claimed.',
-    taken:{A:'Select All',B:'Bold',C:'Copy',D:'Bookmark/Address',E:'Search',F:'Find',G:'Find Next',H:'Replace',I:'Italic',K:'Insert link',L:'Address bar (browsers)',N:'New',O:'Open',P:'Print',R:'Refresh',S:'Save',T:'New tab',U:'Underline',V:'Paste',W:'Close tab',X:'Cut',Y:'Redo',Z:'Undo','1':'Tab 1','2':'Tab 2','3':'Tab 3','4':'Tab 4','5':'Tab 5','6':'Tab 6','7':'Tab 7','8':'Tab 8','9':'Last tab','0':'Tab 10/Zoom reset',Tab:'Switch window (some)','=':'Zoom in','-':'Zoom out','[':'Back',']':'Forward','/':'Help (some)',F4:'Close window',F5:'Refresh'},
-    risky:{J:'Downloads (browsers)',M:'Mute (some)','`':'Tab cycle (some)',';':'Spellcheck (some)',Delete:'Delete word',Esc:'Start menu',F1:'Help',F11:'Fullscreen',F12:'DevTools'},
+    taken:{A:'Select All',B:'Bold',C:'Copy',D:'Bookmark/Address',E:'Search',F:'Find',G:'Find Next',H:'Replace',I:'Italic',K:'Insert link',L:'Address bar (browsers)',N:'New',O:'Open',P:'Print',R:'Refresh',S:'Save',T:'New tab',U:'Underline',V:'Paste',W:'Close tab',X:'Cut',Y:'Redo',Z:'Undo','1':'Tab 1','2':'Tab 2','3':'Tab 3','4':'Tab 4','5':'Tab 5','6':'Tab 6','7':'Tab 7','8':'Tab 8','9':'Last tab','0':'Tab 10/Zoom reset',Tab:'Switch window (some)','=':'Zoom in','-':'Zoom out','[':'Back',']':'Forward','/':'Help (some)',F4:'Close window',F5:'Refresh',Esc:'Start menu (system)'},
+    risky:{J:'Downloads (browsers)',M:'Mute (some)','`':'Tab cycle (some)',';':'Spellcheck (some)',Delete:'Delete word',F1:'Help',F11:'Fullscreen',F12:'DevTools'},
   },
   {
     id:'ctrl-shift', tabLabel:'Ctrl+Shift', mods:['ctrl','shift'],
@@ -694,20 +694,20 @@ const winCombos = [
   {
     id:'ctrl-alt', tabLabel:'Ctrl+Alt', mods:['ctrl','alt'],
     ergo:'Good availability. Note: some languages use Ctrl+Alt as AltGr for special characters.',
-    taken:{Delete:'Security screen (Ctrl+Alt+Del)'},
-    risky:{T:'Terminal (Linux habit)',F:'Find & Replace (some)',Tab:'Switch via preview',L:'Lock (some configs)'},
+    taken:{Delete:'Security screen (Ctrl+Alt+Del)',Tab:'Persistent app switcher (system)'},
+    risky:{T:'Terminal (Linux habit)',F:'Find & Replace (some)',L:'Lock (some configs)',Up:'Rotate display (Intel graphics)',Down:'Rotate display (Intel graphics)',Left:'Rotate display (Intel graphics)',Right:'Rotate display (Intel graphics)'},
   },
   {
     id:'win-ctrl', tabLabel:'Win+Ctrl', mods:['win','ctrl'],
-    ergo:'★ The sweet spot on Windows — very few system claims.',
-    taken:{D:'New virtual desktop',F4:'Close virtual desktop',Left:'Switch desktop left',Right:'Switch desktop right'},
-    risky:{F:'Feedback Hub'},
+    ergo:'The sweet spot on Windows. Very few system claims.',
+    taken:{D:'New virtual desktop',F4:'Close virtual desktop',Left:'Switch desktop left',Right:'Switch desktop right',Return:'Narrator (system)',C:'Color filters (system)',O:'On-screen keyboard (system)',Q:'Quick Assist (system)',Space:'Previous input language (system)'},
+    risky:{F:'Find computers (domain networks)',N:'Narrator settings',S:'Speech recognition (older builds)',V:'Sound output (some builds)'},
   },
   {
     id:'win-shift', tabLabel:'Win+Shift', mods:['win','shift'],
     ergo:'Lightly claimed by Windows. Good ergonomics.',
-    taken:{S:'Screenshot Snipping (system)',Left:'Move window to left monitor',Right:'Move window to right monitor'},
-    risky:{V:'Clipboard history (some builds)'},
+    taken:{S:'Screenshot Snipping (system)',Left:'Move window to left monitor',Right:'Move window to right monitor',Up:'Stretch window vertically',Down:'Restore window height',M:'Restore minimized windows'},
+    risky:{V:'Notification focus (some builds)',R:'Screen recording (Snipping Tool)'},
   },
 ];
 
@@ -721,14 +721,14 @@ const apps = [
     mac: {
       'cmd':{Y:'History',D:'Bookmark',L:'Address bar'},
       'cmd-shift':{B:'Bookmarks bar',J:'Downloads',N:'Incognito',T:'Reopen tab',M:'Switch profile',Delete:'Clear data',W:'Close window'},
-      'cmd-opt':{I:'DevTools',J:'JS Console',U:'View source',C:'Console',B:'Bookmark mgr'},
+      'cmd-opt':{I:'DevTools',J:'JS console',U:'View source',C:'Inspect element',B:'Bookmark manager',Left:'Previous tab',Right:'Next tab'},
       'cmd-ctrl':{F:'Fullscreen'},
       'cmd-ctrl-shift':{},
     },
     win: {
       'win':{},
-      'ctrl':{Y:'History',D:'Bookmark',L:'Address bar',J:'Downloads',H:'History'},
-      'ctrl-shift':{B:'Bookmarks bar',J:'Downloads',N:'Incognito',T:'Reopen tab',M:'Switch profile',Delete:'Clear data',W:'Close window',I:'DevTools'},
+      'ctrl':{D:'Bookmark',L:'Address bar',J:'Downloads',H:'History'},
+      'ctrl-shift':{B:'Bookmarks bar',J:'Downloads',N:'Incognito',T:'Reopen tab',M:'Switch profile',Delete:'Clear data',W:'Close window',I:'DevTools',C:'Inspect element',O:'Bookmark manager'},
       'ctrl-alt':{},
       'win-ctrl':{},
       'win-shift':{},
@@ -759,7 +759,7 @@ const apps = [
     mac: {
       'cmd':{B:'Toggle sidebar',J:'Toggle terminal','\\':'Split editor',K:'Chord prefix'},
       'cmd-shift':{P:'Cmd palette',E:'Explorer',F:'Search files',G:'Source control',X:'Extensions',D:'Debug',H:'Replace in files',U:'Output',Y:'Debug console',K:'Delete line',L:'Select all occ.',M:'Problems',B:'Sidebar','`':'New terminal',N:'New window',O:'Open folder'},
-      'cmd-opt':{F:'Find & Replace','[':'Fold',']':'Unfold',K:'Keyboard shortcuts',Left:'Move editor left',Right:'Move editor right',B:'Breadcrumbs'},
+      'cmd-opt':{F:'Find & Replace','[':'Fold',']':'Unfold',Left:'Move editor left',Right:'Move editor right',B:'Breadcrumbs'},
       'cmd-ctrl':{Left:'Editor to prev group',Right:'Editor to next group'},
       'cmd-ctrl-shift':{},
     },
@@ -814,17 +814,17 @@ const apps = [
     id: 'notion', name: 'Notion', color: '#2d2d2d', platforms: ['mac','win'],
     icon: `<svg viewBox="0 0 24 24" fill="white"><path d="M4.5 3.5L16.7 2l3.8.8c.5.3.5.6.2 1L19 5.2V19l-2.3 1.5c-.7.4-1 .4-1.7 0L6 15.5v5.2c0 .8-.3 1.2-1 1.3l-2.5-.3c-.6-.3-.7-.7-.7-1.3V5c0-.7.3-1.2 1-1.4l1.7-.1zm2.3 2.2v9l6.5 4V9.5l-6.5-3.8z" opacity="0.95"/></svg>`,
     mac: {
-      'cmd':{E:'Inline code','/':'Commands','[':'Outdent',']':'Indent'},
-      'cmd-shift':{L:'Dark mode',H:'Highlight',M:'Comment',E:'Emoji',U:'Move up',D:'Move down','0':'Plain text','1':'H1','2':'H2','3':'H3','4':'Todo','5':'Bullets','6':'Numbers','7':'Toggle','8':'Code block','9':'New page',J:'Full page'},
-      'cmd-opt':{'1':'H1','2':'H2','3':'H3','4':'Todo','5':'H1','8':'Code','9':'Page link'},
+      'cmd':{E:'Inline code',P:'Search',N:'New page',D:'Duplicate','/':'Turn into','[':'Back',']':'Forward','\\':'Toggle sidebar'},
+      'cmd-shift':{L:'Dark mode',H:'Last text color',M:'Comment',U:'Parent page',N:'New window',Up:'Move block up',Down:'Move block down'},
+      'cmd-opt':{'0':'Text','1':'Heading 1','2':'Heading 2','3':'Heading 3','4':'To-do','5':'Bulleted list','6':'Numbered list','7':'Toggle list','8':'Code block','9':'New page',T:'Expand all toggles'},
       'cmd-ctrl':{},
       'cmd-ctrl-shift':{},
     },
     win: {
       'win':{},
-      'ctrl':{E:'Inline code','/':'Commands','[':'Outdent',']':'Indent'},
-      'ctrl-shift':{L:'Dark mode',H:'Highlight',M:'Comment',E:'Emoji',U:'Move up',D:'Move down','0':'Plain text','1':'H1','2':'H2','3':'H3','4':'Todo','5':'Bullets','6':'Numbers','7':'Toggle','8':'Code block','9':'New page',J:'Full page'},
-      'ctrl-alt':{'1':'H1','2':'H2','3':'H3','4':'Todo','5':'H1','8':'Code','9':'Page link'},
+      'ctrl':{E:'Inline code',P:'Search',N:'New page',D:'Duplicate','/':'Turn into','[':'Back',']':'Forward','\\':'Toggle sidebar'},
+      'ctrl-shift':{'0':'Text','1':'Heading 1','2':'Heading 2','3':'Heading 3','4':'To-do','5':'Bulleted list','6':'Numbered list','7':'Toggle list','8':'Code block','9':'New page',L:'Dark mode',H:'Last text color',M:'Comment',U:'Parent page',N:'New window',Up:'Move block up',Down:'Move block down'},
+      'ctrl-alt':{T:'Expand all toggles'},
       'win-ctrl':{},
       'win-shift':{},
     },
