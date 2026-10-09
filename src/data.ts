@@ -121,16 +121,14 @@ export const combos: Record<Platform, ModifierCombo[]> = {
         "A": "Applications (Finder)",
         "C": "Colors panel",
         "D": "Desktop (Finder)",
-        "F": "Full search",
+        "F": "Recents (Finder)",
         "G": "Find Previous",
-        "H": "Home (browsers)",
-        "I": "Inspect/Mail",
-        "L": "Downloads (Finder)",
+        "H": "Home folder (Finder)",
+        "I": "iCloud Drive (Finder)",
         "N": "New folder/Incognito",
-        "O": "Outline (some)",
+        "O": "Documents (Finder)",
         "P": "Page Setup/Private",
         "S": "Save As/Duplicate",
-        "T": "Reopen closed tab",
         "V": "Paste & Match Style",
         "Q": "Log out (system)",
         "Z": "Redo",
@@ -144,16 +142,20 @@ export const combos: Record<Platform, ModifierCombo[]> = {
       "risky": {
         "1": "View mode (some)",
         "2": "View mode (some)",
+        "6": "Ask Siri (macOS 27 beta)",
         "B": "Bookmarks bar (browsers)",
         "E": "Sources (DevTools)",
-        "K": "Block quote/links",
+        "K": "Network (Finder)",
         "M": "Mute (Slack/Zoom)",
-        "R": "Hard reload (browsers)",
+        "R": "AirDrop / hard reload",
         "X": "Strikethrough",
         "J": "Downloads (Chrome)",
         "U": "Utilities folder (Finder)",
         ".": "Show hidden files (Finder)",
-        "\\": "Rarely claimed"
+        "\\": "Rarely claimed",
+        "T": "Reopen tab (browsers)",
+        "Space": "Ask Siri (macOS 27 beta)",
+        ";": "Spelling & grammar"
       }
     },
     {
@@ -171,26 +173,30 @@ export const combos: Record<Platform, ModifierCombo[]> = {
         "M": "Minimize all windows (system)",
         "Esc": "Force Quit (system)",
         "F5": "Accessibility shortcuts (system)",
-        "F": "Find & Replace (many)"
+        "F": "Find & Replace (many)",
+        "L": "Downloads (Finder)",
+        "W": "Close all windows"
       },
       "risky": {
         "1": "Reader (Safari)",
         "2": "History (Safari)",
         "8": "Zoom toggle (accessibility)",
         "A": "Activity Monitor (some)",
-        "C": "Console (DevTools)",
+        "C": "Copy style",
         "I": "DevTools (Chrome)",
-        "J": "Downloads (Chrome)",
-        "L": "Reformat (IDEs)",
-        "S": "Save As (some)",
+        "J": "JS console (Chrome)",
+        "S": "Sidebar (Finder)",
         "T": "Toolbar toggle",
         "U": "View Source (browsers)",
         "V": "Paste special",
         "Left": "Switch tabs (some)",
         "Right": "Switch tabs (some)",
-        "W": "Close all windows (some)",
         "-": "Zoom out (some)",
-        "=": "Zoom in (some)"
+        "=": "Zoom in (some)",
+        "Space": "Spotlight (Finder)",
+        "P": "Path bar (Finder)",
+        "N": "Smart Folder (Finder)",
+        "Y": "Slideshow (Finder)"
       }
     },
     {
@@ -213,7 +219,8 @@ export const combos: Record<Platform, ModifierCombo[]> = {
         "N": "New folder with selection (Finder)",
         "T": "Add to sidebar (Finder)",
         "R": "Recording (OBS/QuickTime)",
-        "M": "Mute (rare)"
+        "M": "Mute (rare)",
+        "Up": "Enclosing folder (Finder)"
       }
     },
     {
@@ -231,7 +238,8 @@ export const combos: Record<Platform, ModifierCombo[]> = {
         "4": "Screenshot → clipboard"
       },
       "risky": {
-        "5": "Screenshot → clipboard (some)"
+        "5": "Screenshot → clipboard (some)",
+        "T": "Add to Dock (Finder)"
       }
     }
   ],
@@ -373,29 +381,29 @@ export const combos: Record<Platform, ModifierCombo[]> = {
       "rank": 4,
       "ergo": "Easy reach. More open than Ctrl alone, but apps claim a fair number.",
       "taken": {
-        "N": "New incognito/window",
-        "T": "Reopen closed tab",
+        "N": "New folder/incognito",
         "Z": "Redo (alt)",
         "Tab": "Switch tabs back",
         "Esc": "Task Manager",
         "=": "Zoom in (some)",
-        "-": "Zoom out (some)",
-        "[": "Prev tab",
-        "]": "Next tab",
-        "Delete": "Clear browsing (browsers)"
+        "-": "Zoom out (some)"
       },
       "risky": {
         "B": "Bookmarks bar (browsers)",
         "E": "Explorer/Sources",
-        "J": "Downloads (Chrome)",
+        "J": "JS console (Chrome)",
         "K": "Links/Block quote",
         "M": "Mute (Slack/Zoom)",
         "P": "Command palette (VS Code)",
         "S": "Save As (some)",
-        "V": "Paste special",
+        "V": "Paste plain text",
         "F": "Search in files (IDEs)",
         "I": "DevTools (Chrome)",
-        "X": "Extensions (VS Code)"
+        "X": "Extensions (VS Code)",
+        "T": "Reopen tab (browsers)",
+        "Delete": "Clear data (browsers)",
+        "[": "Fold (some editors)",
+        "]": "Unfold (some editors)"
       }
     },
     {
@@ -413,12 +421,18 @@ export const combos: Record<Platform, ModifierCombo[]> = {
       },
       "risky": {
         "T": "Terminal (Linux habit)",
-        "F": "Find & Replace (some)",
-        "L": "Lock (some configs)",
-        "Up": "Rotate display (Intel graphics)",
-        "Down": "Rotate display (Intel graphics)",
-        "Left": "Rotate display (Intel graphics)",
-        "Right": "Rotate display (Intel graphics)"
+        "F": "Full screen (Magnifier)",
+        "L": "Lens view (Magnifier)",
+        "Up": "Pan (Magnifier)",
+        "Down": "Pan (Magnifier)",
+        "Left": "Pan (Magnifier)",
+        "Right": "Pan (Magnifier)",
+        "I": "Invert (Magnifier)",
+        "D": "Docked (Magnifier)",
+        "M": "Cycle views (Magnifier)",
+        "R": "Resize lens (Magnifier)",
+        "Space": "Preview desktop (Magnifier)",
+        "-": "Toggle zoom (Magnifier)"
       }
     },
     {
@@ -429,8 +443,18 @@ export const combos: Record<Platform, ModifierCombo[]> = {
         "ctrl"
       ],
       "rank": 1,
-      "ergo": "The sweet spot on Windows. Very few system claims.",
+      "ergo": "The sweet spot on Windows. Apps leave it alone; Windows uses the number row and a handful of letters.",
       "taken": {
+        "0": "Last window of taskbar app",
+        "1": "Last window of taskbar app",
+        "2": "Last window of taskbar app",
+        "3": "Last window of taskbar app",
+        "4": "Last window of taskbar app",
+        "5": "Last window of taskbar app",
+        "6": "Last window of taskbar app",
+        "7": "Last window of taskbar app",
+        "8": "Last window of taskbar app",
+        "9": "Last window of taskbar app",
         "D": "New virtual desktop",
         "F4": "Close virtual desktop",
         "Left": "Switch desktop left",
@@ -439,13 +463,14 @@ export const combos: Record<Platform, ModifierCombo[]> = {
         "C": "Color filters (system)",
         "O": "On-screen keyboard (system)",
         "Q": "Quick Assist (system)",
-        "Space": "Previous input language (system)"
+        "Space": "Previous input language (system)",
+        "M": "Magnifier settings",
+        "N": "Narrator settings",
+        "S": "Voice access/speech",
+        "V": "Sound output"
       },
       "risky": {
-        "F": "Find computers (domain networks)",
-        "N": "Narrator settings",
-        "S": "Speech recognition (older builds)",
-        "V": "Sound output (some builds)"
+        "F": "Find computers (domain networks)"
       }
     },
     {
@@ -458,17 +483,30 @@ export const combos: Record<Platform, ModifierCombo[]> = {
       "rank": 3,
       "ergo": "Lightly claimed by Windows. Good ergonomics.",
       "taken": {
+        "0": "New app instance",
+        "1": "New app instance",
+        "2": "New app instance",
+        "3": "New app instance",
+        "4": "New app instance",
+        "5": "New app instance",
+        "6": "New app instance",
+        "7": "New app instance",
+        "8": "New app instance",
+        "9": "New app instance",
         "S": "Screenshot Snipping (system)",
         "Left": "Move window to left monitor",
         "Right": "Move window to right monitor",
         "Up": "Stretch window vertically",
         "Down": "Restore window height",
-        "M": "Restore minimized windows"
+        "M": "Restore minimized windows",
+        "V": "Cycle notifications",
+        "R": "Screen recording",
+        "A": "Focus Windows tip",
+        "T": "Previous taskbar app",
+        "Return": "UWP full screen",
+        "Space": "Previous input language"
       },
-      "risky": {
-        "V": "Notification focus (some builds)",
-        "R": "Screen recording (Snipping Tool)"
-      }
+      "risky": {}
     }
   ]
 };
@@ -494,7 +532,12 @@ export const apps: AppShortcuts[] = [
         "T": "Reopen tab",
         "M": "Switch profile",
         "Delete": "Clear data",
-        "W": "Close window"
+        "W": "Close window",
+        "D": "Bookmark all tabs",
+        "R": "Hard reload",
+        "G": "Find previous",
+        "H": "Home page",
+        "I": "Email page link"
       },
       "cmd-opt": {
         "I": "DevTools",
@@ -503,7 +546,12 @@ export const apps: AppShortcuts[] = [
         "C": "Inspect element",
         "B": "Bookmark manager",
         "Left": "Previous tab",
-        "Right": "Next tab"
+        "Right": "Next tab",
+        "N": "Split view",
+        "F": "Search the web",
+        "P": "Page setup",
+        "Up": "Cycle toolbar focus",
+        "Down": "Cycle toolbar focus"
       },
       "cmd-ctrl": {
         "F": "Fullscreen"
@@ -518,7 +566,7 @@ export const apps: AppShortcuts[] = [
       },
       "ctrl-shift": {
         "B": "Bookmarks bar",
-        "J": "Downloads",
+        "J": "JS console",
         "N": "Incognito",
         "T": "Reopen tab",
         "M": "Switch profile",
@@ -526,7 +574,10 @@ export const apps: AppShortcuts[] = [
         "W": "Close window",
         "I": "DevTools",
         "C": "Inspect element",
-        "O": "Bookmark manager"
+        "O": "Bookmark manager",
+        "D": "Bookmark all tabs",
+        "R": "Hard reload",
+        "G": "Find previous"
       }
     }
   },
@@ -541,42 +592,100 @@ export const apps: AppShortcuts[] = [
       "cmd": {
         "K": "Quick switcher",
         "/": "Keyboard shortcuts",
-        "U": "Upload file"
+        "U": "Underline",
+        "O": "Upload file"
       },
       "cmd-shift": {
+        "0": "Canvas checklist",
+        "7": "Numbered list",
+        "8": "Bulleted list",
+        "9": "Quote",
         "K": "Browse DMs",
-        "M": "Mentions & reactions",
+        "M": "Activity view",
         "A": "All Unreads",
         "Y": "Set status",
-        "D": "Do Not Disturb",
         "Return": "Snippet",
-        "\\": "Toggle sidebar",
+        "\\": "Add reaction",
         "T": "Threads",
-        "F": "Search in convo"
+        "F": "Apply markdown",
+        "N": "New canvas",
+        "J": "Downloads",
+        "H": "Huddle",
+        "Space": "Huddle mute",
+        "W": "Reopen window",
+        "E": "People view",
+        "L": "Browse channels",
+        "I": "Conversation details",
+        "S": "Workspace switcher",
+        "X": "Strikethrough",
+        "U": "Hyperlink",
+        "C": "Code",
+        "`": "Add reaction",
+        "G": "Find previous",
+        "Z": "Redo",
+        "/": "Context menu"
       },
       "cmd-opt": {
-        "Right": "Next channel",
-        "Left": "Prev channel",
-        "Up": "Next unread",
-        "Down": "Prev unread"
+        "0": "Canvas paragraph",
+        "1": "Big heading",
+        "2": "Medium heading",
+        "3": "Small heading",
+        "Up": "Move canvas item up",
+        "Down": "Move canvas item down",
+        "T": "Canvas comments",
+        "R": "Reader/edit view"
+      },
+      "cmd-ctrl": {
+        "F": "Toggle fullscreen"
       }
     },
     "win": {
       "ctrl": {
         "K": "Quick switcher",
         "/": "Keyboard shortcuts",
-        "U": "Upload file"
+        "O": "Upload file"
       },
       "ctrl-shift": {
-        "K": "Browse DMs",
-        "M": "Mentions & reactions",
+        "0": "More view",
+        "1": "Home view",
+        "2": "Browse DMs",
+        "7": "Numbered list",
+        "8": "Bulleted list",
+        "9": "Quote",
+        "K": "New message",
+        "M": "Activity view",
         "A": "All Unreads",
         "Y": "Set status",
-        "D": "DND",
         "Return": "Snippet",
-        "\\": "Toggle sidebar",
+        "\\": "Add reaction",
         "T": "Threads",
-        "F": "Search in convo"
+        "F": "Apply markdown",
+        "N": "New canvas",
+        "J": "Downloads",
+        "H": "Huddle",
+        "Space": "Huddle mute",
+        "W": "Reopen window",
+        "E": "People view",
+        "L": "Browse channels",
+        "I": "Conversation details",
+        "S": "Workspace switcher",
+        "X": "Strikethrough",
+        "U": "Hyperlink",
+        "C": "Code",
+        "`": "Add reaction",
+        "G": "Find previous",
+        "Z": "Redo"
+      },
+      "ctrl-alt": {
+        "0": "Canvas paragraph",
+        "1": "Big heading",
+        "2": "Medium heading",
+        "3": "Small heading",
+        "T": "Canvas comments",
+        "R": "Reader/edit view",
+        "Q": "Copy anchor link",
+        "Up": "Move item up",
+        "Down": "Move item down"
       }
     }
   },
@@ -598,7 +707,7 @@ export const apps: AppShortcuts[] = [
         "P": "Cmd palette",
         "E": "Explorer",
         "F": "Search files",
-        "G": "Source control",
+        "G": "Find previous",
         "X": "Extensions",
         "D": "Debug",
         "H": "Replace in files",
@@ -607,22 +716,55 @@ export const apps: AppShortcuts[] = [
         "K": "Delete line",
         "L": "Select all occ.",
         "M": "Problems",
-        "B": "Sidebar",
-        "`": "New terminal",
+        "B": "Run build task",
         "N": "New window",
-        "O": "Open folder"
+        "O": "Go to symbol",
+        "T": "Reopen closed editor",
+        "S": "Save as",
+        "V": "Markdown preview",
+        "I": "Chat agent mode",
+        "W": "Close window",
+        "J": "Search details",
+        "C": "Open native terminal",
+        "\\": "Jump to bracket",
+        "Space": "Parameter hints",
+        ".": "Breadcrumbs select",
+        ";": "Focus breadcrumbs",
+        "[": "Previous editor",
+        "]": "Next editor"
       },
       "cmd-opt": {
+        "0": "Toggle group layout",
         "F": "Find & Replace",
         "[": "Fold",
         "]": "Unfold",
-        "Left": "Move editor left",
-        "Right": "Move editor right",
-        "B": "Breadcrumbs"
+        "Left": "Previous editor",
+        "Right": "Next editor",
+        "B": "Secondary sidebar",
+        "S": "Save all",
+        "Up": "Cursor above",
+        "Down": "Cursor below",
+        "C": "Find: match case",
+        "R": "Find: regex",
+        "W": "Find: whole word",
+        "T": "Close other editors",
+        "/": "Open browser",
+        "O": "Toggle overtype",
+        ".": "Auto fix"
       },
       "cmd-ctrl": {
+        "1": "Editor to first group",
+        "9": "Editor to last group",
         "Left": "Editor to prev group",
-        "Right": "Editor to next group"
+        "Right": "Editor to next group",
+        "F": "Toggle full screen",
+        "I": "Open chat view",
+        "Up": "Resize terminal pane",
+        "Down": "Resize terminal pane"
+      },
+      "cmd-ctrl-shift": {
+        "Left": "Shrink selection",
+        "Right": "Expand selection"
       }
     },
     "win": {
@@ -646,17 +788,32 @@ export const apps: AppShortcuts[] = [
         "K": "Delete line",
         "L": "Select all occ.",
         "M": "Problems",
-        "B": "Sidebar",
+        "B": "Run build task",
         "`": "New terminal",
         "N": "New window",
-        "O": "Open folder"
+        "O": "Go to symbol",
+        "T": "Reopen closed editor",
+        "S": "Save as",
+        "V": "Markdown preview",
+        "I": "Chat agent mode",
+        "W": "Close window",
+        "J": "Search details",
+        "C": "Open native terminal",
+        "\\": "Jump to bracket",
+        "Space": "Parameter hints",
+        "[": "Fold",
+        "]": "Unfold"
       },
       "ctrl-alt": {
-        "F": "Find & Replace",
-        "[": "Fold",
-        "]": "Unfold",
-        "Left": "Move editor left",
-        "Right": "Move editor right"
+        "Left": "Editor to prev group",
+        "Right": "Editor to next group",
+        "Up": "Cursor above",
+        "Down": "Cursor below",
+        "I": "Open chat view",
+        "B": "Secondary sidebar",
+        ".": "Model picker",
+        "/": "Open browser",
+        "O": "Remote menu"
       }
     }
   },
@@ -676,23 +833,40 @@ export const apps: AppShortcuts[] = [
         "D": "Duplicate"
       },
       "cmd-shift": {
+        "7": "Numbered list",
+        "8": "Bulleted list",
         "E": "Export",
         "G": "Ungroup",
-        "H": "Flip horizontal",
-        "V": "Flip vertical",
+        "H": "Show/hide selection",
+        "V": "Paste over selection",
         "K": "Place image",
-        "O": "Outline stroke",
+        "O": "Show outlines",
         "L": "Lock layer",
-        "\\": "Layers",
-        "C": "Copy CSS",
+        "\\": "Minimize UI",
+        "C": "Copy as PNG",
         "B": "Bold",
-        "R": "Rulers"
+        "R": "Paste to replace",
+        "'": "Snap to pixel grid",
+        "X": "Strikethrough",
+        "U": "Add link",
+        ",": "Decrease font size",
+        ".": "Increase font size"
       },
       "cmd-opt": {
         "G": "Frame selection",
-        "C": "Copy SVG",
-        "T": "Pixel grid",
-        "P": "Pixel preview"
+        "C": "Copy properties",
+        "T": "Text align center",
+        "V": "Paste properties",
+        "K": "Create component",
+        "B": "Detach instance",
+        "O": "Outline stroke",
+        "L": "Text align left",
+        "R": "Text align right",
+        "\\": "Multiplayer cursors",
+        ",": "Decrease font weight",
+        ".": "Increase font weight",
+        "]": "Bring to front",
+        "[": "Send to back"
       },
       "cmd-ctrl-shift": {
         "E": "Export selection"
@@ -707,23 +881,42 @@ export const apps: AppShortcuts[] = [
         "D": "Duplicate"
       },
       "ctrl-shift": {
+        "4": "Layout guides",
+        "7": "Numbered list",
+        "8": "Bulleted list",
         "E": "Export",
         "G": "Ungroup",
-        "H": "Flip horiz.",
-        "V": "Flip vert.",
+        "H": "Show/hide selection",
+        "V": "Paste over selection",
         "K": "Place image",
-        "O": "Outline stroke",
+        "O": "Show outlines",
         "L": "Lock layer",
-        "\\": "Layers",
-        "C": "Copy CSS",
+        "\\": "Minimize UI",
+        "C": "Copy as PNG",
         "B": "Bold",
-        "R": "Rulers"
+        "R": "Paste to replace",
+        "'": "Snap to pixel grid",
+        "X": "Strikethrough",
+        "U": "Add link",
+        ",": "Decrease font size",
+        ".": "Increase font size",
+        "]": "Bring to front",
+        "[": "Send to back"
       },
       "ctrl-alt": {
         "G": "Frame selection",
-        "C": "Copy SVG",
-        "T": "Pixel grid",
-        "P": "Pixel preview"
+        "C": "Copy properties",
+        "T": "Text align center",
+        "P": "Pixel preview",
+        "V": "Paste properties",
+        "K": "Create component",
+        "B": "Detach instance",
+        "O": "Outline stroke",
+        "L": "Text align left",
+        "R": "Text align right",
+        "\\": "Multiplayer cursors",
+        ",": "Decrease font weight",
+        ".": "Increase font weight"
       }
     }
   },
@@ -737,33 +930,60 @@ export const apps: AppShortcuts[] = [
     "mac": {
       "cmd": {
         "K": "Command menu",
-        ".": "Change status"
+        ".": "Copy issue ID"
       },
       "cmd-shift": {
-        "C": "Copy issue ID",
-        ".": "Cycle status",
-        ",": "Cycle back",
-        "A": "Assign to me",
-        "P": "Priority",
-        "L": "Label",
-        "E": "Estimate",
-        "D": "Due date"
+        "7": "Checklist",
+        "8": "Bulleted list",
+        "9": "Numbered list",
+        "C": "Add to cycle",
+        ".": "Copy git branch",
+        ",": "Copy issue URL",
+        "A": "Attach file",
+        "D": "Remove due date",
+        "S": "Manage subscribers",
+        "M": "Move to team",
+        "O": "Create sub-issue",
+        "I": "Insights panel",
+        "Return": "Create more",
+        "\\": "Code block",
+        "Z": "Redo",
+        "Up": "Open parent issue",
+        "Down": "Open sub-issue",
+        "U": "Upload files"
+      },
+      "cmd-opt": {
+        "M": "Inline comment",
+        "C": "Copy as markdown"
       }
     },
     "win": {
       "ctrl": {
         "K": "Command menu",
-        ".": "Change status"
+        ".": "Copy issue ID"
       },
       "ctrl-shift": {
-        "C": "Copy issue ID",
-        ".": "Cycle status",
-        ",": "Cycle back",
-        "A": "Assign to me",
-        "P": "Priority",
-        "L": "Label",
-        "E": "Estimate",
-        "D": "Due date"
+        "7": "Checklist",
+        "8": "Bulleted list",
+        "9": "Numbered list",
+        "C": "Add to cycle",
+        ".": "Copy git branch",
+        ",": "Copy issue URL",
+        "A": "Attach file",
+        "D": "Remove due date",
+        "S": "Manage subscribers",
+        "M": "Move to team",
+        "O": "Create sub-issue",
+        "I": "Insights panel",
+        "Return": "Create more",
+        "\\": "Code block",
+        "Z": "Redo",
+        "Up": "Open parent issue",
+        "Down": "Open sub-issue"
+      },
+      "ctrl-alt": {
+        "M": "Inline comment",
+        "C": "Copy as markdown"
       }
     }
   },
@@ -847,12 +1067,13 @@ export const apps: AppShortcuts[] = [
     "id": "arc",
     "name": "Arc",
     "platforms": [
-      "mac"
+      "mac",
+      "win"
     ],
     "mac": {
       "cmd": {
         "D": "Pin tab",
-        "S": "Save to library",
+        "S": "Toggle sidebar",
         "L": "URL bar"
       },
       "cmd-shift": {
@@ -861,18 +1082,39 @@ export const apps: AppShortcuts[] = [
         "N": "Incognito",
         "E": "Sidebar view",
         "T": "Reopen tab",
-        "R": "Hard refresh"
+        "R": "Hard refresh",
+        "K": "Clear unpinned tabs"
       },
       "cmd-opt": {
         "N": "Little Arc window",
         "I": "DevTools",
-        "R": "Force refresh"
+        "R": "Force refresh",
+        "Up": "Previous tab",
+        "Down": "Next tab",
+        "Left": "Previous space",
+        "Right": "Next space"
       },
-      "cmd-ctrl": {
-        "N": "New window"
-      }
+      "cmd-ctrl": {}
     },
-    "win": {}
+    "win": {
+      "ctrl-alt": {
+        "Up": "Previous tab",
+        "Down": "Next tab",
+        "Left": "Previous space",
+        "Right": "Next space"
+      },
+      "ctrl-shift": {
+        "N": "Incognito",
+        "T": "Reopen tab",
+        "C": "Copy URL",
+        "K": "Clear unpinned tabs"
+      },
+      "ctrl": {
+        "S": "Toggle sidebar",
+        "D": "Pin tab",
+        "L": "URL bar"
+      }
+    }
   },
   {
     "id": "zoom",
@@ -890,23 +1132,57 @@ export const apps: AppShortcuts[] = [
         "V": "Start/stop video",
         "S": "Screen share",
         "H": "Chat",
-        "M": "Minimize",
+        "M": "Minimal window",
         "F": "Fullscreen",
-        "R": "Record",
+        "R": "Local recording",
         "N": "Switch camera",
-        "W": "Gallery view",
-        "T": "Transfer"
+        "W": "Switch view",
+        "T": "Pause screen share",
+        "C": "Cloud recording",
+        "P": "Pause recording",
+        "I": "Copy invite link",
+        "D": "Dual monitor",
+        "Y": "Reactions panel",
+        "U": "Focus latest message",
+        "E": "Focus chat input",
+        "L": "Focus chat list",
+        "O": "AI chat panel",
+        "J": "Calendar panel"
+      },
+      "cmd-ctrl": {
+        "V": "Start meeting",
+        "S": "Direct share",
+        "M": "Mute all",
+        "U": "Unmute all",
+        "N": "Jump to new messages"
+      },
+      "cmd-opt": {
+        "0": "Collapse all",
+        "4": "Clap reaction",
+        "5": "Thumbs up reaction",
+        "6": "Heart reaction",
+        "7": "Joy reaction",
+        "8": "Wow reaction",
+        "9": "Tada reaction",
+        "I": "Add chat member"
       }
     },
     "win": {
       "ctrl-shift": {
-        "A": "Mute audio",
-        "V": "Start/stop video",
-        "S": "Screen share",
-        "H": "Chat",
-        "F": "Fullscreen",
-        "R": "Record",
-        "W": "Gallery view"
+        "A": "Accept call",
+        "H": "Hold call",
+        "E": "End call",
+        "D": "Decline call",
+        "M": "Mute call",
+        "T": "Transfer call",
+        "U": "Focus latest message",
+        "N": "Jump to unread",
+        "O": "AI chat panel",
+        "Y": "Reactions panel",
+        "J": "Calendar panel"
+      },
+      "ctrl-alt": {
+        "I": "Add chat member"
       }
     }
   },
@@ -920,24 +1196,33 @@ export const apps: AppShortcuts[] = [
     "mac": {
       "cmd": {
         "L": "Search",
-        "N": "New playlist"
+        "N": "New playlist",
+        "K": "Open search"
       },
       "cmd-shift": {
-        "Left": "Prev track",
-        "Right": "Next track",
+        "Left": "Seek backward",
+        "Right": "Seek forward",
         "Down": "Vol down",
         "Up": "Vol up",
-        "W": "Close"
+        "W": "Close",
+        "L": "Go to search",
+        "N": "New folder"
+      },
+      "cmd-opt": {
+        "F": "Search library"
       }
     },
     "win": {
       "ctrl": {
         "L": "Search",
-        "N": "New playlist"
+        "N": "New playlist",
+        "K": "Open search",
+        "S": "Shuffle",
+        "R": "Repeat"
       },
       "ctrl-shift": {
-        "Left": "Prev track",
-        "Right": "Next track",
+        "Left": "Seek backward",
+        "Right": "Seek forward",
         "Down": "Vol down",
         "Up": "Vol up",
         "W": "Close"
@@ -955,16 +1240,9 @@ export const apps: AppShortcuts[] = [
         "Space": "Raycast (global hotkey)"
       },
       "cmd-shift": {
-        ".": "Clipboard history (global)",
-        ",": "Raycast settings",
-        "C": "Confetti (global)",
-        "V": "Clipboard paste (global)"
+        ",": "Configure extension"
       },
-      "cmd-ctrl": {
-        "N": "Floating notes (global)",
-        "R": "AI chat (global)",
-        "Space": "Window mgmt (some configs)"
-      }
+      "cmd-ctrl": {}
     },
     "win": {}
   },
@@ -980,25 +1258,39 @@ export const apps: AppShortcuts[] = [
         "\\": "Autofill (global)"
       },
       "cmd-shift": {
-        "X": "Lock 1Password (global)",
-        "Space": "Quick Access (global)",
-        "L": "Lock (in app)"
+        "X": "Browser extension pop-up",
+        "Space": "Quick Access (some Macs)",
+        "L": "Lock 1Password (global)",
+        "C": "Copy password",
+        "F": "Open & fill login",
+        "D": "Toggle sidebar",
+        "O": "Open item in app"
       },
       "cmd-opt": {
-        "\\": "Fill & save (global)"
+        "\\": "Quick Access (global)",
+        "C": "Copy one-time password",
+        "F": "Find in list"
+      },
+      "cmd-ctrl-shift": {
+        "C": "Copy OTP (extension)"
       }
     },
     "win": {
       "ctrl": {
-        "\\": "Autofill (global)"
+        "\\": "Fill in browser (global)"
       },
       "ctrl-shift": {
-        "X": "Lock 1Password (global)",
-        "Space": "Quick Access (global)",
-        "L": "Lock (in app)"
+        "X": "Browser extension pop-up",
+        "L": "Lock 1Password (global)",
+        "C": "Copy password",
+        "F": "Open & fill login",
+        "D": "Toggle sidebar",
+        "O": "Open item in app",
+        "/": "View shortcuts"
       },
       "ctrl-alt": {
-        "\\": "Fill & save (global)"
+        "C": "Copy one-time password",
+        "F": "Find in list"
       }
     }
   },
@@ -1023,14 +1315,16 @@ export const apps: AppShortcuts[] = [
         "/": "Toggle comment"
       },
       "cmd-shift": {
-        "F": "Search & replace in files",
-        "D": "Create daily note",
-        "E": "Export PDF"
+        "F": "Search in all files",
+        "T": "Reopen closed tab",
+        "V": "Paste as plain text",
+        "K": "Delete line"
       },
       "cmd-opt": {
         "Left": "Navigate back",
         "Right": "Navigate forward",
-        "F": "Toggle search"
+        "F": "Replace in file",
+        "I": "Developer tools"
       }
     },
     "win": {
@@ -1047,14 +1341,15 @@ export const apps: AppShortcuts[] = [
         "/": "Toggle comment"
       },
       "ctrl-shift": {
-        "F": "Search & replace in files",
-        "D": "Create daily note",
-        "E": "Export PDF"
+        "F": "Search in all files",
+        "T": "Reopen closed tab",
+        "V": "Paste as plain text",
+        "K": "Delete line",
+        "I": "Developer tools"
       },
       "ctrl-alt": {
         "Left": "Navigate back",
-        "Right": "Navigate forward",
-        "F": "Toggle search"
+        "Right": "Navigate forward"
       }
     }
   },
@@ -1071,29 +1366,39 @@ export const apps: AppShortcuts[] = [
         "L": "Address bar",
         "D": "Bookmark page",
         "B": "Bookmarks",
-        "H": "History"
+        "Y": "History library"
       },
       "cmd-shift": {
         "T": "Reopen tab",
         "H": "History sidebar",
         "D": "Bookmark all tabs",
-        "B": "Toggle sidebar",
-        "R": "Reader view",
-        "\\": "Tab overview"
+        "B": "Bookmarks toolbar",
+        "R": "Hard reload",
+        "O": "Bookmarks library",
+        "P": "Private window",
+        "N": "Reopen window",
+        "A": "Search tabs",
+        "S": "Screenshot",
+        "E": "Add-ons",
+        "W": "Close window",
+        "Delete": "Clear history"
       },
       "cmd-opt": {
         "I": "DevTools",
         "K": "Web Console",
         "J": "Browser Console",
         "Z": "Debugger",
-        "S": "Style Editor"
+        "R": "Reader view",
+        "F": "Focus search",
+        "U": "View source",
+        "C": "Pick element",
+        "E": "Network monitor",
+        "M": "Responsive design"
       },
       "cmd-ctrl": {
         "F": "Fullscreen"
       },
-      "cmd-ctrl-shift": {
-        "I": "Browser Toolbox"
-      }
+      "cmd-ctrl-shift": {}
     },
     "win": {
       "ctrl": {
@@ -1110,8 +1415,26 @@ export const apps: AppShortcuts[] = [
         "J": "Browser Console",
         "P": "Private window",
         "D": "Bookmark all tabs",
-        "B": "Toggle sidebar",
-        "M": "Responsive design mode"
+        "B": "Bookmarks toolbar",
+        "M": "Responsive design mode",
+        "O": "Bookmarks library",
+        "H": "History library",
+        "A": "Search tabs",
+        "S": "Screenshot",
+        "F": "Add-ons",
+        "N": "Reopen window",
+        "W": "Close window",
+        "R": "Hard reload",
+        "Q": "Quit Firefox",
+        "Delete": "Clear history",
+        "C": "Pick element",
+        "E": "Network monitor",
+        "Z": "Debugger"
+      },
+      "ctrl-alt": {
+        "Z": "Toggle sidebar",
+        "X": "AI chatbot sidebar",
+        "U": "Open tabs sidebar"
       }
     }
   },
@@ -1159,11 +1482,14 @@ export const apps: AppShortcuts[] = [
         "N": "Create/join server",
         "M": "Mute microphone",
         "D": "Toggle deafen",
-        "U": "Upload file"
+        "U": "Upload file",
+        "T": "Create group DM",
+        "H": "Get help"
       },
       "cmd-opt": {
         "Up": "Previous server",
-        "Down": "Next server"
+        "Down": "Next server",
+        "A": "Return to voice"
       }
     },
     "win": {
@@ -1178,11 +1504,14 @@ export const apps: AppShortcuts[] = [
         "N": "Create/join server",
         "M": "Mute microphone",
         "D": "Toggle deafen",
-        "U": "Upload file"
+        "U": "Upload file",
+        "T": "Create group DM",
+        "H": "Get help"
       },
       "ctrl-alt": {
         "Up": "Previous server",
-        "Down": "Next server"
+        "Down": "Next server",
+        "A": "Return to voice"
       }
     }
   },
@@ -1199,12 +1528,26 @@ export const apps: AppShortcuts[] = [
         "/": "Search"
       },
       "cmd-shift": {
+        "7": "Numbered list",
+        "8": "Bulleted list",
+        "9": "Quote",
         "O": "To field",
         "C": "CC field",
         "B": "BCC field",
         "F": "From field",
         "S": "Edit subject",
-        "A": "Attach file"
+        "A": "Insert free times",
+        "U": "Attach file",
+        "M": "Team comment",
+        ",": "Discard draft",
+        "H": "Remind me",
+        "I": "Instant intro",
+        "L": "Send later",
+        "X": "Strikethrough",
+        "]": "Next tab",
+        "[": "Previous tab",
+        "=": "Next day",
+        "-": "Previous day"
       }
     },
     "win": {
@@ -1213,12 +1556,24 @@ export const apps: AppShortcuts[] = [
         "/": "Search"
       },
       "ctrl-shift": {
+        "7": "Numbered list",
+        "8": "Bulleted list",
+        "9": "Quote",
         "O": "To field",
         "C": "CC field",
         "B": "BCC field",
         "F": "From field",
         "S": "Edit subject",
-        "A": "Attach file"
+        "A": "Insert free times",
+        "U": "Attach file",
+        "M": "Team comment",
+        ",": "Discard draft",
+        "H": "Remind me",
+        "I": "Instant intro",
+        "L": "Send later",
+        "X": "Strikethrough",
+        "]": "Next tab",
+        "[": "Previous tab"
       }
     }
   },
@@ -1233,12 +1588,46 @@ export const apps: AppShortcuts[] = [
         "N": "New window",
         "T": "New tab",
         "D": "Split pane",
-        "K": "Clear to previous mark"
+        "K": "Clear to start",
+        "L": "Clear to previous mark"
       },
       "cmd-shift": {
         "D": "Close split pane",
         "I": "Edit title",
-        "M": "Insert bookmark"
+        "M": "Insert bookmark",
+        "T": "Show tab bar",
+        "\\": "Tab overview",
+        "N": "New command",
+        "K": "New remote connection",
+        "W": "Close window",
+        "U": "Unmark",
+        "V": "Paste selection",
+        "A": "Select between marks",
+        "C": "Show colors",
+        "Return": "Return without mark",
+        "Up": "Hide alternate screen",
+        "Down": "Show alternate screen"
+      },
+      "cmd-ctrl": {
+        "N": "New window, same command",
+        "T": "New tab, same command",
+        "V": "Paste escaped text",
+        "F": "Full screen"
+      },
+      "cmd-ctrl-shift": {
+        "C": "Copy without colors",
+        "V": "Paste escaped selection",
+        "/": "Open man page"
+      },
+      "cmd-opt": {
+        "W": "Close other tabs",
+        "I": "Background color",
+        "U": "Mark as bookmark",
+        "L": "Clear to bookmark",
+        "R": "Soft reset",
+        "O": "Option as Meta",
+        "Up": "Previous bookmark",
+        "Down": "Next bookmark"
       }
     },
     "win": {}
@@ -1261,13 +1650,31 @@ export const apps: AppShortcuts[] = [
         "D": "Split horizontally",
         "Return": "Maximize pane",
         "M": "Mark location",
-        "J": "Jump to mark"
+        "J": "Jump to mark",
+        "H": "Paste history",
+        "O": "Open quickly",
+        ";": "Command history",
+        "Up": "Previous mark",
+        "Down": "Next mark"
       },
       "cmd-opt": {
+        "1": "Go to window 1",
+        "2": "Go to window 2",
+        "3": "Go to window 3",
+        "4": "Go to window 4",
+        "5": "Go to window 5",
+        "6": "Go to window 6",
+        "7": "Go to window 7",
+        "8": "Go to window 8",
+        "9": "Go to window 9",
         "Up": "Navigate up pane",
         "Down": "Navigate down pane",
         "Left": "Navigate left pane",
-        "Right": "Navigate right pane"
+        "Right": "Navigate right pane",
+        "B": "Instant replay",
+        "/": "Recent directories",
+        "A": "Alert on next mark",
+        "G": "Floating note"
       }
     },
     "win": {}
@@ -1276,7 +1683,8 @@ export const apps: AppShortcuts[] = [
     "id": "warp",
     "name": "Warp",
     "platforms": [
-      "mac"
+      "mac",
+      "win"
     ],
     "mac": {
       "cmd": {
@@ -1293,15 +1701,66 @@ export const apps: AppShortcuts[] = [
         "C": "Copy command",
         "P": "Navigation palette",
         "T": "Reopen closed tab",
-        "K": "Clear selected lines"
+        "K": "Clear selected lines",
+        "I": "Reinput as root",
+        "S": "Share block",
+        "G": "Find previous",
+        "[": "Previous tab",
+        "]": "Next tab",
+        "Up": "Scroll to block top",
+        "Down": "Scroll to block bottom"
       },
       "cmd-opt": {
         "Up": "Switch pane up",
         "Down": "Switch pane down",
         "Left": "Switch pane left",
-        "Right": "Switch pane right"
+        "Right": "Switch pane right",
+        "F": "Fold selected ranges",
+        "[": "Fold",
+        "]": "Unfold"
+      },
+      "cmd-ctrl": {
+        "K": "Keybindings editor",
+        "L": "Launch config palette",
+        "T": "Theme picker",
+        "Left": "Resize pane",
+        "Right": "Resize pane",
+        "Up": "Resize pane",
+        "Down": "Resize pane"
       }
     },
-    "win": {}
+    "win": {
+      "ctrl-shift": {
+        "D": "Split right",
+        "E": "Split down",
+        "Return": "Maximize pane",
+        "P": "Command palette",
+        "R": "Workflows",
+        "L": "Focus input",
+        "\\": "Warp Drive",
+        "A": "Select all blocks",
+        "K": "Clear blocks",
+        "B": "Bookmark block",
+        "I": "Reinput commands",
+        "C": "Copy",
+        "V": "Paste",
+        "F": "Find",
+        "S": "Share block",
+        "T": "New tab",
+        "[": "Previous pane",
+        "]": "Next pane",
+        "/": "Resource center"
+      },
+      "ctrl-alt": {
+        "T": "Reopen closed tab",
+        "F": "Fold",
+        "[": "Fold",
+        "]": "Unfold",
+        "Left": "Switch panes",
+        "Right": "Switch panes",
+        "Up": "Switch panes",
+        "Down": "Switch panes"
+      }
+    }
   }
 ];

@@ -45,7 +45,9 @@ claude mcp add --transport http keygap https://keygap.app/mcp
 
 **Platforms:** macOS, Windows
 
-**Apps:** Chrome, Firefox, Safari (mac), Arc (mac), Slack, Discord, Zoom, VS Code, Terminal (mac), iTerm2 (mac), Warp (mac), Figma, Linear, Notion, Obsidian, Superhuman, Spotify, Raycast (mac), 1Password
+**Apps:** Chrome, Firefox, Safari (mac), Arc, Slack, Discord, Zoom, VS Code, Terminal (mac), iTerm2 (mac), Warp, Figma, Linear, Notion, Obsidian, Superhuman, Spotify, Raycast (mac), 1Password
+
+Shortcut data was last checked against each vendor's documentation in October 2026. Apps change their defaults, so [open an issue](https://github.com/rossrader/keygap/issues) if something's wrong.
 
 ## Development
 
