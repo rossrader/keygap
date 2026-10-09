@@ -1,0 +1,11 @@
+name = "keygap"
+main = "src/index.ts"
+compatibility_date = "2026-10-01"
+compatibility_flags = ["nodejs_compat"]
+routes = [{ pattern = "keygap.app", custom_domain = true }]
+
+# Import keygap.html as a string so the Worker can inline the data into it.
+[[rules]]
+type = "Text"
+globs = ["**/*.html"]
+fallthrough = true

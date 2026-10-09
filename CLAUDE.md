@@ -21,6 +21,7 @@ keygap/
 └── src/
     ├── index.ts           ← Worker entry: routes browser vs MCP requests
     ├── data.ts            ← shared shortcut database (extracted from keygap.html)
+    ├── env.d.ts           ← lets TypeScript import keygap.html as a string
     ├── html.ts            ← serves the HTML page with data inlined
     └── mcp.ts             ← MCP endpoint handler with tool definitions
 ```
@@ -43,6 +44,7 @@ interface ModifierCombo {
   id: string;           // e.g. 'cmd-ctrl', 'ctrl-shift', 'win-ctrl'
   tabLabel: string;     // display label e.g. '⌘⌃'
   mods: string[];       // constituent modifiers e.g. ['cmd', 'ctrl']
+  rank: number;         // recommendation order for suggest_hotkeys (1 = best)
   ergo: string;         // ergonomics note
   taken: Record<string, string>;  // key → reason
   risky: Record<string, string>;  // key → reason
@@ -66,7 +68,7 @@ Apps: Chrome, Slack, VS Code, Figma, Linear, Notion, Arc (mac only), Zoom, Spoti
 
 ## MCP tools to implement
 
-Use the `@modelcontextprotocol/sdk` npm package — it has a Cloudflare Workers adapter that handles the SSE transport. Do not hand-roll the JSON-RPC protocol.
+Use MCP SDK v2 (`@modelcontextprotocol/server`) with `createMcpHandler` from Cloudflare's `agents/mcp/server`. It serves stateless Streamable HTTP at `/mcp`; SSE and the v1 `@modelcontextprotocol/sdk` path are deprecated. Do not hand-roll the JSON-RPC protocol.
 
 ### `get_available_keys`
 
@@ -107,7 +109,7 @@ Suggest the best available hotkey combos given constraints.
 
 ```
 Request path:
-  /mcp   → MCP SSE handler (src/mcp.ts)
+  /mcp   → MCP Streamable HTTP handler (src/mcp.ts)
   *      → serve HTML page (src/html.ts)
 ```
 
@@ -117,7 +119,7 @@ Keep the router dead simple. No middleware, no frameworks.
 
 Read the shortcut data from `src/data.ts`, serialize it, and inject it into the HTML template where the current inline JS objects live. The browser gets a fully self-contained page.
 
-The current `keygap.html` has the data as JS variables inside a `<script>` tag. Replace those variable declarations with the serialized data from `data.ts` at build/serve time.
+`keygap.html` is a template: it contains `const KEYGAP_DATA = /*__KEYGAP_DATA__*/null;`, which `src/html.ts` replaces with the serialized data. Display-only styling (app colors, icons) stays in the HTML, not in `data.ts`, so the MCP doesn't ship it. Opening `keygap.html` directly from disk won't work; use `wrangler dev`.
 
 ## Build & deploy
 
