@@ -3,880 +3,860 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>KeyGap — Hotkey Availability Explorer</title>
+<title>KeyGap</title>
+<meta name="description" content="Find which keyboard shortcuts are free on macOS and Windows, given the apps you use.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;700&display=swap" rel="stylesheet">
 <style>
+  /* ── Tokens ──
+     The page is a desk; the keyboard is an object on it, so its colours stay the same in both themes. */
+  :root {
+    --desk: #E6E7E2;
+    --ink: #1C1E21;
+    --ink-2: #4F555C;
+    --line: #C4C7C1;
+    --chip: #F4F4EF;
+
+    --case: #2B2F33;
+    --case-edge: #3D4247;
+    --cap: #F4F4EF;
+    --cap-ink: #1C1E21;
+    --free: #2DB89F;
+    --free-ink: #04221D;
+    --sunk: #4A5056;
+    --sunk-ink: #C6CACE;
+    --hatch: rgba(217, 142, 4, 0.6);
+    --mod-idle: #3A3F45;
+    --mod-idle-ink: #AEB3B9;
+    --mod-held: #C9CDD1;
+    --ring: #FFFFFF;
+
+    --s-13: 0.8125rem;
+    --s-16: 1rem;
+    --s-20: 1.25rem;
+    --s-32: clamp(1.5rem, 1.1rem + 1.8vw, 2rem);
+
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --desk: #1A1C1E;
+      --ink: #E8E9E4;
+      --ink-2: #A3A8AE;
+      --line: #383C41;
+      --chip: #24272A;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --desk: #1A1C1E;
+    --ink: #E8E9E4;
+    --ink-2: #A3A8AE;
+    --line: #383C41;
+    --chip: #24272A;
+    color-scheme: dark;
+  }
+
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
   body {
-    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif;
-    background: #111118;
-    color: #e0e0e0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 1.5rem 1rem 2.5rem;
+    font-family: 'Atkinson Hyperlegible Next', system-ui, sans-serif;
+    font-size: var(--s-16);
+    line-height: 1.5;
+    background: var(--desk);
+    color: var(--ink);
     min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
   }
 
+  button { font: inherit; color: inherit; cursor: pointer; }
+  kbd { font: inherit; }
+  :focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+
+  .page {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 1.25rem 16px 2.5rem;
+  }
+
+  /* ── Header ── */
+  .top {
+    display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+    margin-bottom: 2rem;
+  }
+  .brand { font-weight: 700; font-size: var(--s-20); letter-spacing: -0.01em; }
+
+  .seg {
+    display: inline-flex; border: 1px solid var(--line); border-radius: 8px; padding: 2px;
+    background: var(--chip);
+  }
+  .seg button {
+    border: 0; background: transparent; padding: 0.3rem 0.85rem; border-radius: 6px;
+    font-size: var(--s-13); font-weight: 700; color: var(--ink-2);
+  }
+  .seg button[aria-pressed="true"] { background: var(--ink); color: var(--desk); }
+
+  /* ── Headline: the answer ── */
   h1 {
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 1.9rem; font-weight: 700; margin-bottom: 0.3rem;
-    letter-spacing: -0.03em;
-    background: linear-gradient(135deg, #ffffff 0%, #a0b4ff 50%, #60ffa0 100%);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-  .subtitle {
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 0.82rem; color: #6a6a8a; margin-bottom: 1.2rem;
-    text-align: center; letter-spacing: -0.01em;
+    font-size: var(--s-32); font-weight: 700; line-height: 1.15; letter-spacing: -0.015em;
+    max-width: 24ch; margin-bottom: 1.5rem;
   }
 
-  /* ── Platform toggle ── */
-  .platform-toggle {
-    display: flex; align-items: center; gap: 0;
-    background: #1a1a2e; border-radius: 10px; border: 1px solid #2a2a4a;
-    padding: 3px; margin-bottom: 1.1rem; position: relative; overflow: hidden;
+  /* ── Apps ── */
+  .apps { margin-bottom: 1.5rem; }
+  .apps-label { font-size: var(--s-13); color: var(--ink-2); margin-bottom: 0.5rem; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip {
+    border: 1px solid var(--line); background: var(--chip); border-radius: 999px;
+    padding: 0.25rem 0.8rem; font-size: var(--s-13);
   }
-  .platform-btn {
-    padding: 0.5em 1.4em; border-radius: 8px; font-size: 0.82rem; font-weight: 600;
-    cursor: pointer; border: none; background: transparent; color: #666;
-    transition: color 0.25s ease; user-select: none; position: relative; z-index: 2;
-    font-family: 'Space Grotesk', sans-serif; display: flex; align-items: center; gap: 0.5em;
-  }
-  .platform-btn:hover { color: #aaa; }
-  .platform-btn.active { color: #fff; }
-  .platform-slider {
-    position: absolute; top: 3px; bottom: 3px; left: 3px;
-    width: calc(50% - 3px); border-radius: 7px;
-    background: linear-gradient(135deg, #2a2a5a, #1e3a5a);
-    border: 1px solid rgba(91,127,255,0.3);
-    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-    z-index: 1;
-  }
-  .platform-slider.right {
-    transform: translateX(100%);
-  }
-  .platform-icon { font-size: 1.1em; }
+  .chip[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--desk); font-weight: 700; }
+  .chip:hover { border-color: var(--ink-2); }
 
-  /* ── Tab bar ── */
-  .tab-bar { display: flex; gap: 6px; margin-bottom: 1rem; flex-wrap: wrap; justify-content: center; }
+  /* ── Modifier tabs ── */
+  .tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 0.75rem; }
   .tab {
-    padding: 0.45em 0.9em; border-radius: 8px; font-size: 0.78rem; font-weight: 500;
-    cursor: pointer; border: 1px solid #2a2a4a; background: #1a1a2e; color: #888;
-    transition: all 0.15s ease; user-select: none;
+    display: flex; align-items: baseline; gap: 0.5rem;
+    border: 1px solid var(--line); background: transparent; border-radius: 8px;
+    padding: 0.35rem 0.75rem; font-size: var(--s-16);
   }
-  .tab:hover { border-color: #4a4a6a; color: #bbb; }
-  .tab.active { background: #2a2a5a; border-color: #5b7fff; color: #fff; }
-  .tab kbd { font-family: inherit; font-size: 0.95em; }
+  .tab .count { font-size: var(--s-13); color: var(--ink-2); }
+  .tab[aria-selected="true"] { background: var(--ink); border-color: var(--ink); color: var(--desk); }
+  .tab[aria-selected="true"] .count { color: inherit; opacity: 0.8; }
+  .tab:hover { border-color: var(--ink-2); }
 
-  /* ── Stats ── */
-  .stats {
-    display: flex; gap: 1.5rem; margin-bottom: 0.9rem; font-size: 0.78rem;
-    color: #888; justify-content: center; flex-wrap: wrap;
+  /* ── Inspector + recorder ── */
+  .inspector {
+    display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;
+    min-height: 3rem; padding: 0.5rem 0.5rem 0.5rem 0.9rem;
+    border: 1px solid var(--line); border-radius: 10px; background: var(--chip);
+    margin-bottom: 0.6rem;
   }
-  .stats .num { font-weight: 700; }
-  .stats .green { color: #2ecc71; }
-  .stats .orange { color: #e67e22; }
-  .stats .grey { color: #555; }
-  .stats .blue { color: #60a5fa; }
+  .inspector.listening { border-color: var(--ink); box-shadow: 0 0 0 1px var(--ink); }
+  .inspect-text { flex: 1 1 18rem; font-size: var(--s-16); }
+  .inspect-text kbd { font-weight: 700; margin-right: 0.35rem; }
+  .inspect-text .muted { color: var(--ink-2); }
+  .btn {
+    border: 1px solid var(--line); background: var(--desk); border-radius: 7px;
+    padding: 0.35rem 0.75rem; font-size: var(--s-13); font-weight: 700; white-space: nowrap;
+  }
+  .btn:hover { border-color: var(--ink-2); }
+  .btn[aria-pressed="true"] { background: var(--ink); color: var(--desk); border-color: var(--ink); }
+  .record-help { font-size: var(--s-13); color: var(--ink-2); margin: -0.2rem 0 0.75rem; max-width: 70ch; }
 
-  /* ── Keyboard container with transition ── */
-  .keyboard-stage {
-    position: relative; perspective: 800px;
+  /* ── Keyboard ── */
+  .case {
+    background: var(--case); border: 1px solid var(--case-edge); border-radius: 14px;
+    padding: clamp(6px, 1.4vw, 14px);
+    box-shadow: 0 1px 0 rgba(255,255,255,0.06) inset, 0 10px 24px -12px rgba(0,0,0,0.45);
+    transition: opacity 0.15s ease;
   }
-  .keyboard-shell {
-    background: #222230; border-radius: 14px; padding: 12px 14px 10px;
-    box-shadow: 0 4px 30px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.04);
-    border: 1px solid #333; width: fit-content; max-width: 100%; overflow: visible;
-    transition: opacity 0.3s ease, transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-  .keyboard-shell.wipe-out-left {
-    opacity: 0; transform: translateX(-60px) scale(0.97);
-    pointer-events: none;
-  }
-  .keyboard-shell.wipe-out-right {
-    opacity: 0; transform: translateX(60px) scale(0.97);
-    pointer-events: none;
-  }
-  .keyboard-shell.wipe-in-left {
-    animation: wipeInFromRight 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
-  }
-  .keyboard-shell.wipe-in-right {
-    animation: wipeInFromLeft 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
-  }
-  @keyframes wipeInFromRight {
-    from { opacity: 0; transform: translateX(60px) scale(0.97); }
-    to { opacity: 1; transform: translateX(0) scale(1); }
-  }
-  @keyframes wipeInFromLeft {
-    from { opacity: 0; transform: translateX(-60px) scale(0.97); }
-    to { opacity: 1; transform: translateX(0) scale(1); }
-  }
+  .case.swap { opacity: 0; }
+  .keys { container: keys / inline-size; }
 
-  .kb-row { display: flex; gap: 3px; margin-bottom: 3px; }
-  .kb-row:first-child { margin-bottom: 7px; }
-  .kb-row:last-child { margin-bottom: 0; }
+  .row {
+    display: grid; grid-template-columns: repeat(120, minmax(0, 1fr));
+    height: calc(100cqi / 15 * 0.86); margin-bottom: calc(100cqi / 15 * 0.07);
+  }
+  .row:last-child { margin-bottom: 0; }
+  .row.f { height: calc(100cqi / 15 * 0.6); margin-bottom: calc(100cqi / 15 * 0.16); }
 
-  .k {
-    height: 36px; border-radius: 5px;
+  .k, .mod {
+    margin: 0 calc(100cqi / 15 * 0.035);
+    border-radius: clamp(3px, 0.9cqi, 6px); border: 0;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
-    font-size: 0.68rem; font-weight: 600; cursor: default; position: relative;
-    transition: transform 0.1s ease, box-shadow 0.12s ease;
-    flex-shrink: 0; line-height: 1.15;
+    position: relative; min-width: 0; overflow: hidden;
+    font-size: clamp(8px, 2.1cqi, 15px); line-height: 1.1; font-weight: 700;
   }
-  .k .sub { font-size: 0.48rem; font-weight: 400; opacity: 0.6; margin-top: 1px; }
-  .k .top-char { font-size: 0.5rem; font-weight: 400; opacity: 0.55; }
-  .k:hover { transform: scale(1.08); z-index: 5; }
+  .k {
+    background: linear-gradient(180deg, rgba(255,255,255,0.35), rgba(255,255,255,0) 45%), var(--cap);
+    color: var(--cap-ink);
+    box-shadow: inset 0 calc(-1 * clamp(2px, 0.5cqi, 4px)) 0 rgba(0,0,0,0.2), 0 1px 0 rgba(0,0,0,0.4);
+    padding-bottom: clamp(2px, 0.5cqi, 4px);
+  }
+  .k .shifted { font-size: clamp(6px, 1.5cqi, 11px); font-weight: 400; opacity: 0.75; }
+  .k .front {
+    position: absolute; left: 2px; right: 2px; bottom: clamp(3px, 0.6cqi, 5px);
+    font-size: clamp(6px, 1.3cqi, 10px); font-weight: 700; text-align: center;
+    white-space: nowrap; overflow: hidden; text-overflow: clip; opacity: 0.85;
+  }
+  .k.has-front { justify-content: flex-start; padding-top: clamp(3px, 0.8cqi, 7px); }
 
-  .k.available {
-    background: linear-gradient(180deg, #1a7a42 0%, #156633 100%);
-    color: #3ddb78; border: 1px solid #2ecc71;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.3), 0 0 8px rgba(46,204,113,0.12);
-  }
-  .k.available:hover { box-shadow: 0 0 16px rgba(46,204,113,0.35); }
+  .k.free { background: linear-gradient(180deg, rgba(255,255,255,0.25), rgba(255,255,255,0) 45%), var(--free); color: var(--free-ink); }
   .k.taken {
-    background: linear-gradient(180deg, #2a2a38 0%, #222230 100%);
-    color: #4a4a5a; border: 1px solid #333340;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    background: var(--sunk); color: var(--sunk-ink); font-weight: 400;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.5); transform: translateY(1px);
   }
   .k.risky {
-    background: linear-gradient(180deg, #5a3a1a 0%, #4a3015 100%);
-    color: #e67e22; border: 1px solid #c0651a;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.3), 0 0 6px rgba(230,126,34,0.1);
-  }
-  .k.risky:hover { box-shadow: 0 0 16px rgba(230,126,34,0.3); }
-  .k.app-claimed {
-    background: linear-gradient(180deg, #1e3a6e 0%, #172d55 100%);
-    color: #60a5fa; border: 1px solid #3b82f6;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.3), 0 0 8px rgba(59,130,246,0.15);
-  }
-  .k.app-claimed:hover { box-shadow: 0 0 16px rgba(59,130,246,0.4); }
-  .k.modifier {
-    background: linear-gradient(180deg, #1e1e2c 0%, #181824 100%);
-    color: #3a3a5a; border: 1px solid #2a2a3a; font-size: 0.55rem;
-  }
-  /* Spacer for F-key grouping */
-  .k-spacer { flex-shrink: 0; }
-  .k.modifier.active-mod {
-    background: linear-gradient(180deg, #2a2a5a 0%, #222248 100%);
-    color: #7b9fff; border: 1px solid #5b7fff;
-    box-shadow: 0 0 10px rgba(91,127,255,0.2);
-  }
-  .k .app-dots { position: absolute; bottom: 3px; display: flex; gap: 2px; }
-  .k .app-dot { width: 5px; height: 5px; border-radius: 50%; }
-
-  /* Tooltip — below by default */
-  .k[data-tooltip]:hover::after {
-    content: attr(data-tooltip); position: absolute; top: calc(100% + 7px);
-    left: 50%; transform: translateX(-50%); background: #0a0a16; color: #ddd;
-    padding: 5px 9px; border-radius: 6px; font-size: 0.62rem; font-weight: 400;
-    white-space: nowrap; border: 1px solid #3a3a5a; z-index: 20;
-    pointer-events: none; box-shadow: 0 4px 12px rgba(0,0,0,0.5); max-width: 280px;
-  }
-  .kb-row.row-bottom .k[data-tooltip]:hover::after {
-    top: auto; bottom: calc(100% + 7px);
+    background: repeating-linear-gradient(135deg, var(--hatch) 0 2px, transparent 2px 6px), var(--cap);
+    text-shadow: 0 0 3px var(--cap), 0 0 3px var(--cap);
   }
 
-  .legend { display: flex; gap: 1.3rem; margin-top: 1rem; flex-wrap: wrap; justify-content: center; }
-  .legend-item { display: flex; align-items: center; gap: 0.35rem; font-size: 0.7rem; color: #888; }
-  .legend-swatch { width: 13px; height: 13px; border-radius: 3px; }
-  .sw-avail { background: #2ecc71; } .sw-risky { background: #e67e22; }
-  .sw-taken { background: #3a3a48; } .sw-app { background: #3b82f6; }
-
-  .ergo-note {
-    margin-top: 0.8rem; font-size: 0.72rem; color: #5a5a7a;
-    text-align: center; font-style: italic; max-width: 640px;
+  .mod { background: var(--mod-idle); color: var(--mod-idle-ink); font-weight: 400; }
+  .mod .word { font-size: clamp(6px, 1.25cqi, 10px); margin-top: 1px; }
+  .mod.held {
+    background: var(--mod-held); color: var(--cap-ink); font-weight: 700;
+    box-shadow: inset 0 2px 3px rgba(0,0,0,0.35); transform: translateY(1px);
   }
 
-  /* ── App Selector ── */
-  .app-section { margin-top: 1.6rem; width: 100%; max-width: 680px; }
-  .app-section-title {
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.1em;
-    color: #5a5a7a; text-align: center; margin-bottom: 0.9rem; font-weight: 600;
-  }
-  .app-grid {
-    display: grid; gap: 16px 12px; justify-content: center; justify-items: center;
-  }
-  .app-card {
-    width: 72px; cursor: pointer; user-select: none;
-    display: flex; flex-direction: column; align-items: center; gap: 6px;
-    transition: transform 0.15s ease;
-  }
-  .app-card:hover { transform: translateY(-2px); }
-  .iso-icon {
-    width: 56px; height: 56px; position: relative;
-    transform: rotateX(12deg) rotateZ(-4deg);
-    transform-style: preserve-3d; perspective: 200px;
-    transition: transform 0.2s ease, filter 0.2s ease;
-    filter: saturate(0.4) brightness(0.6);
-  }
-  .app-card.active .iso-icon {
-    filter: saturate(1) brightness(1);
-    transform: rotateX(12deg) rotateZ(-4deg) translateY(-3px);
-  }
-  .app-card:hover .iso-icon { filter: saturate(0.8) brightness(0.85); }
-  .app-card.active:hover .iso-icon { filter: saturate(1) brightness(1.1); }
-  .iso-face { position: absolute; border-radius: 12px; }
-  .iso-top {
-    width: 52px; height: 52px; top: 0; left: 2px;
-    display: flex; align-items: center; justify-content: center;
-    z-index: 2; border-radius: 14px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
-  }
-  .iso-right {
-    width: 52px; height: 8px; bottom: -4px; left: 5px;
-    border-radius: 0 0 10px 10px; z-index: 1; filter: brightness(0.5);
-  }
-  .iso-left {
-    width: 8px; height: 52px; top: 4px; left: -2px;
-    border-radius: 10px 0 0 10px; z-index: 1; filter: brightness(0.35);
-  }
-  .iso-icon svg {
-    width: 28px; height: 28px; position: relative; z-index: 3;
-    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));
-  }
-  .app-label { font-size: 0.62rem; color: #555; font-weight: 500; transition: color 0.15s; text-align: center; }
-  .app-card.active .app-label { color: #bbb; }
-  .app-card:hover .app-label { color: #999; }
-  .app-count { font-size: 0.55rem; color: #444; font-weight: 400; transition: color 0.15s; }
-  .app-card.active .app-count { color: #60a5fa; }
+  .arrows { display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: 1fr 1fr; }
+  .arrows .k { margin: 0 calc(100cqi / 15 * 0.035); font-size: clamp(7px, 1.6cqi, 12px); padding-bottom: 1px; }
+  /* Half-height arrow caps are too small for an app name, so they get the bar marker */
+  .arrows .k.has-front { justify-content: center; padding-top: 0; }
+  .arrows .k .front { font-size: 0; height: 2px; bottom: 2px; background: currentColor; left: 30%; right: 30%; border-radius: 1px; }
+  .arrows .up { grid-column: 2; grid-row: 1; margin-bottom: 1px; }
+  .arrows .left { grid-column: 1; grid-row: 2; margin-top: 1px; }
+  .arrows .down { grid-column: 2; grid-row: 2; margin-top: 1px; }
+  .arrows .right { grid-column: 3; grid-row: 2; margin-top: 1px; }
 
-  /* Mac-only badge */
-  .app-card.unavailable { opacity: 0.25; pointer-events: none; }
-  .app-card .platform-badge {
-    font-size: 0.5rem; color: #555; margin-top: -3px;
+  .k:hover { outline: 2px solid rgba(255,255,255,0.55); outline-offset: 1px; z-index: 1; }
+  .k:focus-visible, .k.pinned { outline: 2px solid var(--ring); outline-offset: 1px; z-index: 2; }
+  .k.flash { animation: press 0.6s ease; }
+  @keyframes press {
+    0% { transform: translateY(0); }
+    25% { transform: translateY(3px); box-shadow: inset 0 2px 3px rgba(0,0,0,0.4); }
+    100% { transform: translateY(0); }
   }
 
-  /* ── MCP Callout Banner ── */
-  .callout-banner {
-    display: flex; align-items: center; gap: 0.7em;
-    background: linear-gradient(135deg, #1a2744 0%, #1e2a4a 100%);
-    border: 1px solid rgba(91,127,255,0.25);
-    border-radius: 10px; padding: 0.6em 1em;
-    margin-bottom: 1rem; max-width: 520px;
-    font-size: 0.76rem; color: #99b3e6;
-    cursor: pointer; transition: border-color 0.2s, background 0.2s;
-  }
-  .callout-banner:hover {
-    border-color: rgba(91,127,255,0.5);
-    background: linear-gradient(135deg, #1e2e50 0%, #223456 100%);
-  }
-  .callout-banner .callout-icon { font-size: 1em; flex-shrink: 0; }
-  .callout-banner .callout-text { flex: 1; }
-  .callout-banner .callout-text strong { color: #c0d4ff; }
-  .callout-banner .callout-arrow { color: #5b7fff; font-size: 1.1em; flex-shrink: 0; }
-  .callout-banner .callout-dismiss {
-    background: none; border: none; color: #4a5a7a; font-size: 1.1em;
-    cursor: pointer; padding: 0 0 0 0.3em; line-height: 1;
-    transition: color 0.15s;
-  }
-  .callout-banner .callout-dismiss:hover { color: #8899bb; }
-  .callout-banner.hidden { display: none; }
-
-  /* ── Slide Panel ── */
-  .panel-overlay {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.6);
-    z-index: 100; opacity: 0; pointer-events: none;
-    transition: opacity 0.3s ease;
-  }
-  .panel-overlay.open { opacity: 1; pointer-events: all; }
-
-  .panel {
-    position: fixed; top: 0; right: 0; bottom: 0;
-    width: min(440px, 92vw); background: #16182a;
-    z-index: 101; transform: translateX(100%);
-    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-    overflow-y: auto; border-left: 1px solid #2a2a4a;
-    box-shadow: -8px 0 30px rgba(0,0,0,0.5);
-  }
-  .panel.open { transform: translateX(0); }
-
-  .panel-inner {
-    padding: 2rem 1.8rem 3rem;
-  }
-  .panel-close {
-    position: absolute; top: 1rem; right: 1rem;
-    background: none; border: 1px solid #2a2a4a; border-radius: 8px;
-    color: #666; font-size: 1rem; width: 32px; height: 32px;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer; transition: all 0.15s;
-  }
-  .panel-close:hover { border-color: #4a4a6a; color: #aaa; }
-
-  .panel h2 {
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 1.3rem; font-weight: 700; color: #fff;
-    margin-bottom: 1.2rem; letter-spacing: -0.02em;
-  }
-  .panel h3 {
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 0.85rem; font-weight: 600; color: #8899cc;
-    text-transform: uppercase; letter-spacing: 0.06em;
-    margin: 1.5rem 0 0.6rem;
-  }
-  .panel h3:first-of-type { margin-top: 0.5rem; }
-  .panel p {
-    font-size: 0.82rem; color: #99a3b8; line-height: 1.65;
-    margin-bottom: 0.8rem;
-  }
-  .panel a { color: #7b9fff; text-decoration: none; }
-  .panel a:hover { text-decoration: underline; }
-
-  .panel .code-block {
-    background: #0d0f1a; border: 1px solid #2a2a4a; border-radius: 8px;
-    padding: 0.8em 1em; font-family: 'SF Mono', 'Fira Code', monospace;
-    font-size: 0.74rem; color: #a0c4ff; margin: 0.6rem 0 1rem;
-    position: relative; overflow-x: auto; line-height: 1.6;
-    word-break: break-all;
-  }
-  .panel .code-block .copy-btn {
-    position: absolute; top: 6px; right: 6px;
-    background: #1a1e30; border: 1px solid #2a2a4a; border-radius: 5px;
-    color: #667; font-size: 0.62rem; padding: 3px 8px;
-    cursor: pointer; transition: all 0.15s;
-  }
-  .panel .code-block .copy-btn:hover { border-color: #5b7fff; color: #aaa; }
-
-  .panel .example-prompt {
-    background: #0d0f1a; border-left: 3px solid #5b7fff;
-    padding: 0.6em 0.9em; border-radius: 0 6px 6px 0;
-    font-size: 0.76rem; color: #8899cc; margin: 0.4rem 0;
-    font-style: italic;
+  @container keys (max-width: 560px) {
+    .k .shifted, .mod .word { display: none; }
+    .k .front { font-size: 0; height: 2px; background: currentColor; left: 25%; right: 25%; border-radius: 1px; }
+    .k.has-front { justify-content: center; padding-top: 0; }
   }
 
-  .panel ul {
-    list-style: none; padding: 0; margin: 0.4rem 0 0.8rem;
+  /* ── Below the keyboard ── */
+  .legend {
+    display: flex; flex-wrap: wrap; gap: 0.5rem 1.25rem; margin-top: 0.9rem;
+    font-size: var(--s-13); color: var(--ink-2);
   }
-  .panel li {
-    font-size: 0.78rem; color: #8899bb; padding: 0.3em 0;
-    padding-left: 1.2em; position: relative;
+  .legend-item { display: flex; align-items: center; gap: 0.45rem; }
+  .legend-item strong { color: var(--ink); }
+  .swatch {
+    width: 22px; height: 18px; border-radius: 4px; flex-shrink: 0;
+    display: inline-flex; align-items: flex-end; justify-content: center; padding-bottom: 4px;
   }
-  .panel li::before {
-    content: '→'; position: absolute; left: 0; color: #5b7fff;
+  .swatch.free { background: var(--free); box-shadow: inset 0 -2px 0 rgba(0,0,0,0.2); }
+  .swatch.taken { background: var(--sunk); box-shadow: inset 0 2px 3px rgba(0,0,0,0.5); }
+  .swatch.risky { background: repeating-linear-gradient(135deg, var(--hatch) 0 2px, transparent 2px 5px), var(--cap); box-shadow: inset 0 -2px 0 rgba(0,0,0,0.2), 0 0 0 1px var(--line); }
+  .swatch.app { background: var(--cap); box-shadow: inset 0 -2px 0 rgba(0,0,0,0.2), 0 0 0 1px var(--line); }
+  .swatch.app::after { content: ''; width: 10px; height: 2px; border-radius: 1px; background: var(--cap-ink); }
+
+  .ergo { margin-top: 0.75rem; font-size: var(--s-13); color: var(--ink-2); max-width: 70ch; }
+  .ergo strong { color: var(--ink); }
+
+  .free-list { margin-top: 2rem; padding-top: 1.25rem; border-top: 1px solid var(--line); }
+  .free-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 0.6rem; }
+  .free-head h2 { font-size: var(--s-20); font-weight: 700; }
+  .free-keys { display: flex; flex-wrap: wrap; gap: 4px; }
+  .free-keys kbd {
+    min-width: 2rem; padding: 0.1rem 0.4rem; text-align: center; border-radius: 5px;
+    background: var(--free); color: var(--free-ink); font-weight: 700; font-size: var(--s-13);
+    box-shadow: inset 0 -2px 0 rgba(0,0,0,0.2);
   }
+  .empty { color: var(--ink-2); }
 
   /* ── Footer ── */
-  .site-footer {
-    margin-top: 2.5rem; padding: 1.2rem 0 0.5rem;
-    border-top: 1px solid #1e1e30;
-    display: flex; gap: 1.5rem; align-items: center;
-    justify-content: center; flex-wrap: wrap;
+  .foot {
+    margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--line);
+    display: flex; flex-wrap: wrap; gap: 0.5rem 1.5rem; font-size: var(--s-13); color: var(--ink-2);
   }
-  .footer-link {
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 0.72rem; color: #4a5a7a; text-decoration: none;
-    cursor: pointer; transition: color 0.15s; font-weight: 500;
-    letter-spacing: 0.02em;
+  .foot button, .foot a {
+    background: none; border: 0; padding: 0; color: var(--ink); text-decoration: underline;
+    text-underline-offset: 3px; text-decoration-color: var(--line); font-size: inherit;
   }
-  .footer-link:hover { color: #8899bb; }
-  .footer-sep { color: #2a2a3a; font-size: 0.6rem; }
-  .footer-credit {
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 0.72rem; color: #3a4a6a; font-weight: 500;
-  }
-  .footer-credit a { color: #5a6a9a; text-decoration: none; transition: color 0.15s; }
-  .footer-credit a:hover { color: #8899cc; }
+  .foot button:hover, .foot a:hover { text-decoration-color: currentColor; }
+  .foot .credit { margin-left: auto; }
 
-  @media (max-width: 740px) {
-    .keyboard-shell { padding: 8px 8px 6px; border-radius: 10px; }
-    .kb-row { gap: 2px; margin-bottom: 2px; }
-    .k { height: 30px; font-size: 0.58rem; border-radius: 4px; }
-    .k .sub { font-size: 0.42rem; } .k .top-char { font-size: 0.42rem; }
-    .app-card { width: 64px; } .iso-icon { width: 48px; height: 48px; }
-    .iso-top { width: 44px; height: 44px; }
+  /* ── Side panels ── */
+  dialog.panel {
+    position: fixed; inset: 0 0 0 auto; height: 100%; max-height: 100%;
+    width: min(460px, 92vw); max-width: 100%; margin: 0;
+    border: 0; border-left: 1px solid var(--line); background: var(--desk); color: var(--ink);
+    padding: 2rem 1.75rem 3rem; overflow-y: auto;
   }
+  dialog.panel::backdrop { background: rgba(10, 12, 14, 0.5); }
+  .panel .close {
+    position: absolute; top: 1rem; right: 1rem; width: 2rem; height: 2rem;
+    border: 1px solid var(--line); border-radius: 7px; background: transparent; font-size: 1.1rem; line-height: 1;
+  }
+  .panel h2 { font-size: var(--s-20); margin-bottom: 1rem; padding-right: 2.5rem; }
+  .panel h3 { font-size: var(--s-16); margin: 1.5rem 0 0.4rem; }
+  .panel p, .panel li { font-size: var(--s-16); color: var(--ink-2); margin-bottom: 0.6rem; max-width: 60ch; }
+  .panel strong { color: var(--ink); }
+  .panel ul { padding-left: 1.1rem; }
+  .panel a { color: var(--ink); text-underline-offset: 3px; }
+  .code {
+    display: flex; align-items: center; gap: 0.5rem; justify-content: space-between;
+    background: var(--chip); border: 1px solid var(--line); border-radius: 8px;
+    padding: 0.5rem 0.5rem 0.5rem 0.8rem; margin: 0.4rem 0 0.8rem;
+  }
+  .code code { font-family: ui-monospace, 'SF Mono', Menlo, monospace; font-size: var(--s-13); overflow-wrap: anywhere; }
+  .prompt { border-left: 3px solid var(--free); padding: 0.2rem 0 0.2rem 0.8rem; margin: 0.5rem 0; color: var(--ink); }
+
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
   @media (max-width: 560px) {
-    .k { height: 24px; font-size: 0.48rem; }
-    .k .sub, .k .top-char { display: none; }
+    .page { padding-top: 1rem; }
+    .top { margin-bottom: 1.25rem; }
+    .foot .credit { margin-left: 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .case { transition: none; }
+    .k.flash { animation: none; }
   }
 </style>
 </head>
 <body>
+<div class="page">
 
-<h1>KeyGap</h1>
-<p class="subtitle">Find available hotkey combos across platforms &amp; apps</p>
-
-<div class="platform-toggle" id="platformToggle">
-  <div class="platform-slider" id="platformSlider"></div>
-  <div class="platform-btn active" data-platform="mac">
-    <span class="platform-icon"></span> macOS
-  </div>
-  <div class="platform-btn" data-platform="win">
-    <span class="platform-icon">⊞</span> Windows
-  </div>
-</div>
-
-<div class="tab-bar" id="tabBar"></div>
-
-<div class="callout-banner" id="mcpBanner" onclick="openPanel('mcp')">
-  <span class="callout-icon">&#x1F50C;</span>
-  <span class="callout-text"><strong>New:</strong> Use KeyGap as an MCP tool in Claude</span>
-  <span class="callout-arrow">&rarr;</span>
-  <button class="callout-dismiss" onclick="event.stopPropagation(); dismissBanner()">&times;</button>
-</div>
-
-<div class="stats" id="stats"></div>
-<div class="keyboard-stage">
-  <div class="keyboard-shell" id="keyboard"></div>
-</div>
-
-<div class="legend">
-  <div class="legend-item"><div class="legend-swatch sw-avail"></div> Available</div>
-  <div class="legend-item"><div class="legend-swatch sw-risky"></div> Risky</div>
-  <div class="legend-item"><div class="legend-swatch sw-taken"></div> Taken (system)</div>
-  <div class="legend-item"><div class="legend-swatch sw-app"></div> Claimed by app</div>
-</div>
-<div class="ergo-note" id="ergoNote"></div>
-
-<div class="app-section">
-  <div class="app-section-title">Select your apps to see what's still free</div>
-  <div class="app-grid" id="appGrid"></div>
-</div>
-
-<div class="site-footer">
-  <span class="footer-link" onclick="openPanel('about')">About</span>
-  <span class="footer-sep">&middot;</span>
-  <span class="footer-link" onclick="openPanel('mcp')">MCP</span>
-  <span class="footer-sep">&middot;</span>
-  <span class="footer-credit">Built by <a href="https://rossrader.ca" target="_blank" rel="noopener">Ross Rader</a></span>
-</div>
-
-<!-- Overlay -->
-<div class="panel-overlay" id="panelOverlay" onclick="closePanel()"></div>
-
-<!-- About Panel -->
-<div class="panel" id="aboutPanel">
-  <button class="panel-close" onclick="closePanel()">&times;</button>
-  <div class="panel-inner">
-    <h2>About KeyGap</h2>
-    <p>Find the gaps in your keyboard shortcuts.</p>
-
-    <h3>Why this exists</h3>
-    <p>Every platform has a hidden goldmine of unclaimed modifier combos &mdash; but finding them means mentally cross-referencing the OS, your browser, your editor, your chat app, and everything else you run. KeyGap does that for you.</p>
-    <p>The main insight: on macOS, <strong>&#8984;&#8963; (Cmd+Ctrl)</strong> is almost entirely unclaimed. On Windows, <strong>Win+Ctrl</strong> is the equivalent sweet spot. Most people don't know this.</p>
-
-    <h3>How to use it</h3>
-    <p>Pick your platform at the top. Flip through modifier combos to see what the OS claims. Then toggle the apps you actually use &mdash; green keys are safe to claim for your own shortcuts, scripts, Raycast commands, or automation tools.</p>
-
-    <h3>A note on accuracy</h3>
-    <p>Shortcut data is sourced from official documentation and tested against current versions. Some apps let you rebind everything, and plugins or extensions can add their own shortcuts. If you spot something wrong, <a href="https://github.com/rossrader/keygap" target="_blank" rel="noopener">open an issue or PR</a>.</p>
-  </div>
-</div>
-
-<!-- MCP Panel -->
-<div class="panel" id="mcpPanel">
-  <button class="panel-close" onclick="closePanel()">&times;</button>
-  <div class="panel-inner">
-    <h2>KeyGap MCP</h2>
-    <p>Query keyboard shortcut availability directly from Claude. No need to open the website &mdash; just ask.</p>
-
-    <h3>Endpoint</h3>
-    <div class="code-block">
-      <span id="mcpUrl">https://keygap.app/mcp</span>
-      <button class="copy-btn" onclick="copyMcpUrl()">Copy</button>
+  <header class="top">
+    <div class="brand">KeyGap</div>
+    <div class="seg" role="group" aria-label="Platform">
+      <button type="button" data-platform="mac">macOS</button>
+      <button type="button" data-platform="win">Windows</button>
     </div>
+  </header>
 
-    <h3>Setup</h3>
-    <p>In Claude, go to <strong>Settings &rarr; MCP Servers</strong> and add the URL above. That's it &mdash; Claude will discover the available tools automatically.</p>
+  <main>
+    <h1 id="headline" aria-live="polite"></h1>
 
-    <h3>Try asking Claude</h3>
-    <div class="example-prompt">"What Cmd+Ctrl combos are free if I use Chrome and Slack?"</div>
-    <div class="example-prompt">"I need 4 hotkeys that won't conflict with VS Code or Figma"</div>
-    <div class="example-prompt">"Is Ctrl+Shift+K taken by anything on Windows?"</div>
+    <section class="apps" aria-labelledby="appsLabel">
+      <p class="apps-label" id="appsLabel">Apps you use</p>
+      <div class="chips" id="appChips"></div>
+    </section>
 
-    <h3>Available tools</h3>
-    <ul>
-      <li><strong>get_available_keys</strong> &mdash; list free keys for a modifier combo, optionally filtered by active apps</li>
-      <li><strong>check_key</strong> &mdash; check if a specific combo is available and who claims it if not</li>
-      <li><strong>suggest_hotkeys</strong> &mdash; suggest the best available combos given your constraints</li>
-    </ul>
+    <div class="tabs" role="tablist" aria-label="Modifier keys" id="tabs"></div>
 
-    <h3>How it works</h3>
-    <p>The same shortcut database that powers the visual keyboard above is served via <a href="https://modelcontextprotocol.io" target="_blank" rel="noopener">MCP</a> at the endpoint above. Browser visitors get the interactive UI; MCP clients get structured data. One source of truth, two interfaces.</p>
-  </div>
+    <div class="inspector" id="inspector">
+      <p class="inspect-text" id="inspectText"></p>
+      <button type="button" class="btn" id="recorder" aria-pressed="false">Check a shortcut by pressing it</button>
+    </div>
+    <p class="record-help" id="recordHelp" hidden></p>
+
+    <div class="case" id="case">
+      <div class="keys" id="keys" role="group" aria-label="Keyboard" aria-describedby="keysHint"></div>
+    </div>
+    <p class="sr-only" id="keysHint">Use the arrow keys to move between keys.</p>
+
+    <div class="legend" id="legend"></div>
+    <p class="ergo" id="ergo"></p>
+
+    <section class="free-list" aria-labelledby="freeTitle">
+      <div class="free-head">
+        <h2 id="freeTitle"></h2>
+        <button type="button" class="btn" id="copyFree">Copy list</button>
+      </div>
+      <div class="free-keys" id="freeKeys"></div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <button type="button" data-open="about">About</button>
+    <button type="button" data-open="mcp">Use with Claude</button>
+    <a href="https://github.com/rossrader/keygap" target="_blank" rel="noopener">GitHub</a>
+    <span class="credit">Built by <a href="https://rossrader.ca" target="_blank" rel="noopener">Ross Rader</a></span>
+  </footer>
 </div>
+
+<p class="sr-only" aria-live="assertive" id="announce"></p>
+
+<dialog class="panel" id="aboutPanel" aria-labelledby="aboutTitle">
+  <button type="button" class="close" aria-label="Close">&times;</button>
+  <h2 id="aboutTitle">About KeyGap</h2>
+  <p>Find the gaps in your keyboard shortcuts.</p>
+
+  <h3>Why this exists</h3>
+  <p>Every platform has unclaimed modifier combinations, but finding them means cross-referencing the OS, your browser, your editor, your chat app and everything else you run. KeyGap does that for you.</p>
+  <p>The main insight: on macOS, <strong>⌘⌃ (Cmd+Ctrl)</strong> is almost entirely unclaimed. On Windows, <strong>Win+Ctrl</strong> is the equivalent. Most people don't know this.</p>
+
+  <h3>How to use it</h3>
+  <p>Pick your platform and the apps you use. Each tab is a modifier combination. Teal keys are free to claim for your own shortcuts, scripts, Raycast commands or automations. To check one shortcut, choose <strong>Check a shortcut by pressing it</strong> and press it.</p>
+
+  <h3>A note on accuracy</h3>
+  <p>Shortcut data comes from official documentation. Some apps let you rebind everything, and plugins or extensions add their own shortcuts. If you spot something wrong, <a href="https://github.com/rossrader/keygap" target="_blank" rel="noopener">open an issue or pull request</a>.</p>
+</dialog>
+
+<dialog class="panel" id="mcpPanel" aria-labelledby="mcpTitle">
+  <button type="button" class="close" aria-label="Close">&times;</button>
+  <h2 id="mcpTitle">Use KeyGap with Claude</h2>
+  <p>KeyGap is also an MCP server, so you can ask Claude about free shortcuts without opening this page.</p>
+
+  <h3>Server URL</h3>
+  <div class="code"><code id="mcpUrl">https://keygap.app/mcp</code><button type="button" class="btn" id="copyMcp">Copy</button></div>
+
+  <h3>Add it to Claude</h3>
+  <p>In Claude, open <strong>Settings → Connectors</strong>, choose <strong>Add custom connector</strong> and paste the URL.</p>
+  <p>In Claude Code, run:</p>
+  <div class="code"><code id="mcpCmd">claude mcp add --transport http keygap https://keygap.app/mcp</code><button type="button" class="btn" id="copyCmd">Copy</button></div>
+
+  <h3>Try asking</h3>
+  <p class="prompt">What Cmd+Ctrl shortcuts are free if I use Chrome and Slack?</p>
+  <p class="prompt">I need 4 hotkeys that won't conflict with VS Code or Figma.</p>
+  <p class="prompt">Is Ctrl+Shift+K taken by anything on Windows?</p>
+
+  <h3>Tools</h3>
+  <ul>
+    <li><strong>get_available_keys</strong> lists the free keys for a modifier combination, given your apps.</li>
+    <li><strong>check_key</strong> checks one shortcut and says what uses it.</li>
+    <li><strong>suggest_hotkeys</strong> suggests the best free shortcuts for your setup.</li>
+  </ul>
+  <p>The same shortcut data powers this page and the MCP server.</p>
+</dialog>
 
 <script>
-// ═══════════════════════════════════════════════════
-// PANELS & BANNER
-// ═══════════════════════════════════════════════════
-function openPanel(which) {
-  closePanel();
-  document.getElementById('panelOverlay').classList.add('open');
-  document.getElementById(which + 'Panel').classList.add('open');
-  document.body.style.overflow = 'hidden';
-}
-function closePanel() {
-  document.getElementById('panelOverlay').classList.remove('open');
-  document.querySelectorAll('.panel').forEach(p => p.classList.remove('open'));
-  document.body.style.overflow = '';
-}
-function dismissBanner() {
-  document.getElementById('mcpBanner').classList.add('hidden');
-}
-function copyMcpUrl() {
-  const url = document.getElementById('mcpUrl').textContent;
-  navigator.clipboard.writeText(url).then(() => {
-    const btn = document.querySelector('.code-block .copy-btn');
-    btn.textContent = 'Copied!';
-    setTimeout(() => btn.textContent = 'Copy', 1500);
-  });
-}
-// Close panel on Escape
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closePanel(); });
-
-// ═══════════════════════════════════════════════════
-// KEYBOARD LAYOUTS
-// ═══════════════════════════════════════════════════
-const U = 36, GAP = 3, SPACER_W = 10;
-// Target width: 15U of keys + 13 gaps (based on number row: 13 std + 2U backspace)
-const TARGET_W = 15 * U + 13 * GAP; // 579px
-
-// F-row per platform — Mac is uniform, Windows groups in 4s
-// null entries = spacer
-const macFRow = [
-  ['Esc','esc',null,1],
-  ['F1','F1'],['F2','F2'],['F3','F3'],['F4','F4'],
-  ['F5','F5'],['F6','F6'],['F7','F7'],['F8','F8'],
-  ['F9','F9'],['F10','F10'],['F11','F11'],['F12','F12'],
-];
-const winFRow = [
-  ['Esc','Esc',null,1], null,
-  ['F1','F1'],['F2','F2'],['F3','F3'],['F4','F4'], null,
-  ['F5','F5'],['F6','F6'],['F7','F7'],['F8','F8'], null,
-  ['F9','F9'],['F10','F10'],['F11','F11'],['F12','F12'],
-];
-
-// Shared alpha rows — wMult > 1 marks "flex" keys that stretch to fill
-const sharedAlphaRows = [
-  // Number row: 13 std + Delete(2)
-  [['`','`','~'],['1','1','!'],['2','2','@'],['3','3','#'],['4','4','$'],['5','5','%'],['6','6','^'],['7','7','&'],['8','8','*'],['9','9','('],['0','0',')'], ['-','-','_'],['=','=','+'],['Delete','delete',null,2]],
-  // QWERTY: Tab(1.5) + 12 std + Backslash(1.5)
-  [['Tab','tab',null,1.5],['Q','Q'],['W','W'],['E','E'],['R','R'],['T','T'],['Y','Y'],['U','U'],['I','I'],['O','O'],['P','P'],['[','[','{'],  [']',']','}'],['\\','\\','|',1.5]],
-  // Home: Caps(1.75) + 11 std + Return(2.25)
-  [['CapsLock','caps lock',null,1.75],['A','A'],['S','S'],['D','D'],['F','F'],['G','G'],['H','H'],['J','J'],['K','K'],['L','L'],[';',';',':'], ["'","'",'"'],['Return','return',null,2.25]],
-  // Shift: LShift(2.25) + 10 std + RShift(2.75)
-  [['LShift','shift',null,2.25],['Z','Z'],['X','X'],['C','C'],['V','V'],['B','B'],['N','N'],['M','M'],[',',',','<'],['.','.', '>'],['/','/','?'],['RShift','shift',null,2.75]],
-];
-
-// Platform-specific bottom rows — all non-arrow keys are flex
-const macBottomRow = [
-  ['Fn','fn',null,1],['LCtrl','⌃',null,1],['LOpt','⌥',null,1.25],['LCmd','⌘',null,1.5],
-  ['Space','',null,6.5],
-  ['RCmd','⌘',null,1.5],['ROpt','⌥',null,1.25],
-  ['Left','◀',null,1],['UpDown','▲▼',null,1],['Right','▶',null,1],
-];
-
-const winBottomRow = [
-  ['LCtrl','Ctrl',null,1.5],['LWin','⊞',null,1.25],['LAlt','Alt',null,1.25],
-  ['Space','',null,6],
-  ['RAlt','AltGr',null,1.25],['RWin','⊞',null,1.25],['Menu','☰',null,1.25],['RCtrl','Ctrl',null,1.5],
-  ['Left','◀',null,1],['UpDown','▲▼',null,1],['Right','▶',null,1],
-];
-
-// Compute pixel widths for a row so total = TARGET_W
-function computeRowWidths(row) {
-  const keys = row.filter(k => k !== null);
-  const spacerCount = row.filter(k => k === null).length;
-  // CSS gap applies between ALL flex children (keys + spacers)
-  const totalChildren = row.length;
-  const gapTotal = (totalChildren - 1) * GAP;
-  const spacerTotal = spacerCount * SPACER_W;
-  const availableForKeys = TARGET_W - gapTotal - spacerTotal;
-
-  let stdCount = 0, flexWeightTotal = 0;
-  const flexKeys = [];
-  keys.forEach(k => {
-    const w = k[3] || 1;
-    if (w <= 1) stdCount++;
-    else { flexWeightTotal += w; flexKeys.push(k); }
-  });
-
-  const widths = new Map();
-  if (flexWeightTotal === 0) {
-    // All standard (e.g. F-row) — distribute evenly
-    const base = Math.floor(availableForKeys / keys.length);
-    let leftover = availableForKeys - base * keys.length;
-    keys.forEach(k => {
-      const extra = leftover > 0 ? 1 : 0;
-      leftover--;
-      widths.set(k[0], base + extra);
-    });
-  } else {
-    const stdPixels = stdCount * U;
-    const remaining = availableForKeys - stdPixels;
-    // Assign flex keys, accumulate rounding error
-    let assigned = 0;
-    flexKeys.forEach((k, i) => {
-      const w = k[3];
-      if (i < flexKeys.length - 1) {
-        const px = Math.round(remaining * w / flexWeightTotal);
-        widths.set(k[0], px);
-        assigned += px;
-      } else {
-        // Last flex key absorbs rounding remainder
-        widths.set(k[0], remaining - assigned);
-      }
-    });
-    keys.forEach(k => {
-      if (!widths.has(k[0])) widths.set(k[0], U);
-    });
-  }
-  return widths;
-}
-
-const macModifierIds = new Set(['Fn','LCtrl','LOpt','LCmd','RCmd','ROpt','LShift','RShift','CapsLock']);
-const winModifierIds = new Set(['LCtrl','RCtrl','LWin','RWin','LAlt','RAlt','Menu','LShift','RShift','CapsLock']);
-
 // ═══════════════════════════════════════════════════
 // DATA — injected by the Worker from src/data.ts
 // ═══════════════════════════════════════════════════
 const KEYGAP_DATA = /*__KEYGAP_DATA__*/null;
-const macCombos = KEYGAP_DATA.combos.mac;
-const winCombos = KEYGAP_DATA.combos.win;
 
-// Display-only app styling (kept out of src/data.ts so the MCP doesn't ship it)
-const APP_LOOKS = {
-  'chrome': { color: '#4285f4', icon: `<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="4.5" fill="white"/><circle cx="12" cy="12" r="3" fill="#4285f4"/><path d="M12 7.5A4.5 4.5 0 0 1 16.1 10H23a11 11 0 0 0-19.4-3.5L7.4 13A4.5 4.5 0 0 1 12 7.5z" fill="#ea4335"/><path d="M7.4 13A4.5 4.5 0 0 0 12 16.5l-3.8 6.6A11 11 0 0 1 1 10h6.9a4.5 4.5 0 0 0-.5 3z" fill="#34a853"/><path d="M12 16.5a4.5 4.5 0 0 0 4.1-2.5l3.8 6.5A11 11 0 0 1 8.2 23.1L12 16.5z" fill="#fbbc05"/></svg>` },
-  'slack': { color: '#611f69', icon: `<svg viewBox="0 0 24 24" fill="white"><path d="M6.5 2a2 2 0 0 0 0 4h2V4a2 2 0 0 0-2-2zM2 8.5a2 2 0 0 0 4 0v-2H4a2 2 0 0 0-2 2zm15.5-2a2 2 0 0 0 0-4h-2v2a2 2 0 0 0 2 2zM13.5 2a2 2 0 0 0-4 0v2h2a2 2 0 0 0 2-2zM22 8.5a2 2 0 0 0-4 0v2h2a2 2 0 0 0 2-2zm-4 9a2 2 0 0 0 4 0v-2h-2a2 2 0 0 0-2 2zM2 15.5a2 2 0 0 0 4 0v-2H4a2 2 0 0 0-2 2zm8.5 6.5a2 2 0 0 0 0-4h-2v2a2 2 0 0 0 2 2zm6-4a2 2 0 0 0-4 0v2h2a2 2 0 0 0 2-2z" opacity="0.9"/></svg>` },
-  'vscode': { color: '#0078d4', icon: `<svg viewBox="0 0 24 24" fill="white"><path d="M17.5 1L7 11.5l-4-3.2L1 9.5v5l2 1.2 4-3.2L17.5 23l5.5-2.5V3.5L17.5 1zM5 12l2.5-2L5 8v4zm12.5 6.5L10 12l7.5-6.5v13z" opacity="0.95"/></svg>` },
-  'figma': { color: '#a259ff', icon: `<svg viewBox="0 0 24 24" fill="white"><path d="M8 2a4 4 0 0 0 0 8h4V2H8z" fill="#f24e1e"/><path d="M12 2h4a4 4 0 0 1 0 8h-4V2z" fill="#ff7262"/><path d="M8 10a4 4 0 0 0 0 8h4v-8H8z" fill="#a259ff"/><path d="M16 10a4 4 0 1 1 0 8 4 4 0 0 1 0-8z" fill="#1abcfe"/><path d="M8 18a4 4 0 0 0 0 8h4v-8H8z" fill="#0acf83" opacity="0.9"/></svg>` },
-  'linear': { color: '#5e6ad2', icon: `<svg viewBox="0 0 24 24" fill="white"><path d="M3.3 14.4a10.5 10.5 0 0 0 6.3 6.3L3.3 14.4zm-.9-2.2A10.5 10.5 0 0 0 12 21.8L2.2 12zm.2-2.1l12.3 12.3a10.5 10.5 0 0 0 2.8-1.5L3.5 6.7A10.5 10.5 0 0 0 2 9.5l.6.6zm2.5-4.5L19.4 19.9a10.5 10.5 0 0 0 1.7-2.1L7.3 4a10.5 10.5 0 0 0-2.2 1.6zm4-2.3l12.6 12.6a10.5 10.5 0 0 0 .8-2.7L11.8 3.1c-.9.1-1.8.3-2.7.6l.1-.4zm4.8-.9l8 8a10.5 10.5 0 0 0-1.6-4.7L15.6 3a10.5 10.5 0 0 0-2.7-.2l.7.6zm4.7 1.8l3.4 3.4A10.5 10.5 0 0 0 18 3.3l-.5 1z" opacity="0.95"/></svg>` },
-  'notion': { color: '#2d2d2d', icon: `<svg viewBox="0 0 24 24" fill="white"><path d="M4.5 3.5L16.7 2l3.8.8c.5.3.5.6.2 1L19 5.2V19l-2.3 1.5c-.7.4-1 .4-1.7 0L6 15.5v5.2c0 .8-.3 1.2-1 1.3l-2.5-.3c-.6-.3-.7-.7-.7-1.3V5c0-.7.3-1.2 1-1.4l1.7-.1zm2.3 2.2v9l6.5 4V9.5l-6.5-3.8z" opacity="0.95"/></svg>` },
-  'arc': { color: '#4a90d9', icon: `<svg viewBox="0 0 24 24" fill="none"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10" stroke="white" stroke-width="3.5" stroke-linecap="round" opacity="0.95"/><circle cx="20" cy="5" r="2.5" fill="white" opacity="0.8"/></svg>` },
-  'zoom': { color: '#2d8cff', icon: `<svg viewBox="0 0 24 24" fill="white"><rect x="2" y="5" width="14" height="14" rx="3" fill="white" opacity="0.95"/><path d="M18 9l4-3v12l-4-3V9z" fill="white" opacity="0.8"/></svg>` },
-  'spotify': { color: '#1db954', icon: `<svg viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.6 14.5c-.2.3-.5.4-.8.2-2.2-1.3-5-1.6-8.3-.9-.3.1-.6-.1-.7-.4-.1-.3.1-.6.4-.7 3.6-.8 6.7-.5 9.1 1 .3.2.4.6.3.8zm1.2-2.8c-.25.4-.7.5-1 .3-2.5-1.5-6.3-2-9.3-1.1-.4.1-.8-.1-.9-.4-.1-.4.1-.8.4-.9 3.4-1 7.5-.5 10.4 1.2.3.2.5.6.4.9zm.1-2.9C14.7 9 9 8.8 5.8 9.7c-.45.1-.9-.1-1.1-.6-.1-.5.1-.9.6-1.1C9 7 15.3 7.2 19.3 9.2c.4.2.6.8.3 1.2-.2.4-.7.6-1.1.4z" opacity="0.95"/></svg>` },
-  'raycast': { color: '#ff6363', icon: `<svg viewBox="0 0 24 24" fill="none"><path d="M6.5 17.5L2 22M8.5 15.5l-4 4M12 15l-3 3M15 12l-3 3M15.5 8.5l-4 4M17.5 6.5l-4 4M22 2l-4.5 4.5" stroke="white" stroke-width="2.2" stroke-linecap="round" opacity="0.95"/></svg>` },
-  '1password': { color: '#0572ec', icon: `<svg viewBox="0 0 24 24" fill="white"><circle cx="12" cy="12" r="9" fill="none" stroke="white" stroke-width="2.2"/><rect x="9" y="8" width="6" height="8" rx="3" fill="none" stroke="white" stroke-width="2"/><line x1="12" y1="12" x2="12" y2="14" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>` },
-  'obsidian': { color: '#7c3aed', icon: `<svg viewBox="0 0 24 24" fill="none"><path d="M12.6 2.4l6.4 3.6c.3.2.5.5.6.8l.4 7.4c0 .3-.1.6-.3.9l-4.6 5.8c-.2.3-.6.5-1 .5l-5.2-.3c-.3 0-.6-.2-.8-.4L4.4 15c-.2-.3-.3-.6-.2-1l1.6-7.2c.1-.3.3-.6.6-.8L12 2.4c.2-.1.4-.1.6 0z" fill="white" opacity="0.95"/></svg>` },
+// ═══════════════════════════════════════════════════
+// KEYBOARD LAYOUT
+// Each row is 120 columns wide (15 key units × 8), so standard keys span 8.
+// Entries: [id, label, topLegend, span]. null id = gap. 'ARROWS' = the arrow cluster.
+// ═══════════════════════════════════════════════════
+const FKEYS = Array.from({ length: 12 }, (_, i) => `F${i + 1}`);
+const LAYOUT = {
+  mac: {
+    f: [['Esc', 'esc', null, 12], ...FKEYS.map(f => [f, f, null, 9])],
+    bottom: [['Fn', 'fn', null, 8], ['LCtrl', '⌃', 'control', 8], ['LOpt', '⌥', 'option', 8], ['LCmd', '⌘', 'command', 10],
+             ['Space', '', null, 44], ['RCmd', '⌘', 'command', 10], ['ROpt', '⌥', 'option', 8], ['ARROWS', null, null, 24]],
+    del: 'delete', ret: 'return',
+  },
+  win: {
+    f: [['Esc', 'Esc', null, 8], [null, null, null, 8], ...FKEYS.slice(0, 4).map(f => [f, f, null, 8]), [null, null, null, 4],
+        ...FKEYS.slice(4, 8).map(f => [f, f, null, 8]), [null, null, null, 4], ...FKEYS.slice(8).map(f => [f, f, null, 8])],
+    bottom: [['LCtrl', 'Ctrl', null, 10], ['LWin', '⊞', null, 8], ['LAlt', 'Alt', null, 10], ['Space', '', null, 48],
+             ['RAlt', 'Alt', null, 10], ['RCtrl', 'Ctrl', null, 10], ['ARROWS', null, null, 24]],
+    del: 'backspace', ret: 'enter',
+  },
 };
-const apps = KEYGAP_DATA.apps.map(a => ({ ...a, ...APP_LOOKS[a.id] }));
-
-// ═══════════════════════════════════════════════════
-// STATE
-// ═══════════════════════════════════════════════════
-let platform = 'mac';
-let currentCombo = 0;
-let activeApps = new Set();
-
-function getRows() {
-  const fRow = platform === 'mac' ? macFRow : winFRow;
-  const bottomRow = platform === 'mac' ? macBottomRow : winBottomRow;
-  return [fRow, ...sharedAlphaRows, bottomRow];
+function alphaRows(p) {
+  const L = LAYOUT[p];
+  const chars = (s, tops) => [...s].map((c, i) => [c, c, tops ? tops[i] : null, 8]);
+  return [
+    [...chars('`1234567890-=', '~!@#$%^&*()_+'), ['Delete', L.del, null, 16]],
+    [['Tab', 'tab', null, 12], ...chars('QWERTYUIOP'), ...chars('[]', '{}'), ['\\', '\\', '|', 12]],
+    [['CapsLock', 'caps', null, 14], ...chars('ASDFGHJKL'), ...chars(";'", ':"'), ['Return', L.ret, null, 18]],
+    [['LShift', '⇧', 'shift', 18], ...chars('ZXCVBNM'), ...chars(',./', '<>?'), ['RShift', '⇧', 'shift', 22]],
+  ];
 }
-function getCombos() { return platform === 'mac' ? macCombos : winCombos; }
-function getModifierIds() { return platform === 'mac' ? macModifierIds : winModifierIds; }
-function isActiveMod(keyId, combo) {
-  const macMap = {LCmd:'cmd',RCmd:'cmd',LCtrl:'ctrl',LOpt:'opt',ROpt:'opt',LShift:'shift',RShift:'shift'};
-  const winMap = {LCtrl:'ctrl',RCtrl:'ctrl',LWin:'win',RWin:'win',LAlt:'alt',RAlt:'alt',LShift:'shift',RShift:'shift'};
-  const map = platform === 'mac' ? macMap : winMap;
-  return combo.mods.includes(map[keyId]);
+const MOD_OF = { LCmd: 'cmd', RCmd: 'cmd', LCtrl: 'ctrl', RCtrl: 'ctrl', LOpt: 'opt', ROpt: 'opt',
+                 LShift: 'shift', RShift: 'shift', LWin: 'win', LAlt: 'alt', RAlt: 'alt', Fn: null, CapsLock: null };
+const MOD_NAME = { cmd: 'Cmd', ctrl: 'Ctrl', opt: 'Opt', shift: 'Shift', win: 'Win', alt: 'Alt' };
+const ARROWS = [['Up', '↑', 'up'], ['Left', '←', 'left'], ['Down', '↓', 'down'], ['Right', '→', 'right']];
+const KEY_NAME = { Esc: 'Esc', Delete: 'Delete', Tab: 'Tab', Return: 'Return', Space: 'Space', Up: 'Up', Down: 'Down', Left: 'Left', Right: 'Right' };
+const OS = { mac: 'macOS', win: 'Windows' };
+
+// Short names printed on the front of a keycap when an app uses that key
+const FRONT = { chrome: 'Chrome', slack: 'Slack', vscode: 'VS Code', figma: 'Figma', linear: 'Linear', notion: 'Notion',
+                arc: 'Arc', zoom: 'Zoom', spotify: 'Spotify', raycast: 'Raycast', '1password': '1Pass', obsidian: 'Obsidian' };
+
+// ═══════════════════════════════════════════════════
+// STATE (URL first, then localStorage, then detection)
+// ═══════════════════════════════════════════════════
+const state = { platform: 'mac', comboId: null, apps: new Set(), pinned: null };
+const store = {
+  get(k) { try { return localStorage.getItem(k); } catch { return null; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch { /* storage unavailable */ } },
+};
+
+function detectPlatform() {
+  const p = (navigator.userAgentData?.platform || navigator.platform || '').toLowerCase();
+  return p.startsWith('win') ? 'win' : 'mac';
+}
+function combos(p = state.platform) { return KEYGAP_DATA.combos[p]; }
+function combo() { return combos().find(c => c.id === state.comboId); }
+function bestCombo(p) { return [...combos(p)].sort((a, b) => a.rank - b.rank)[0].id; }
+function appsFor(p = state.platform) { return KEYGAP_DATA.apps.filter(a => a.platforms.includes(p)); }
+function activeApps() { return appsFor().filter(a => state.apps.has(a.id)); }
+
+function loadState() {
+  const q = new URLSearchParams(location.search);
+  const p = q.get('p') || store.get('keygap.platform') || detectPlatform();
+  state.platform = KEYGAP_DATA.combos[p] ? p : 'mac';
+  const m = q.get('m');
+  state.comboId = combos().some(c => c.id === m) ? m : bestCombo(state.platform);
+  const appList = q.has('apps') ? q.get('apps') : store.get('keygap.apps');
+  const known = new Set(KEYGAP_DATA.apps.map(a => a.id));
+  (appList || '').split(',').filter(id => known.has(id)).forEach(id => state.apps.add(id));
+}
+function saveState() {
+  const q = new URLSearchParams();
+  q.set('p', state.platform);
+  q.set('m', state.comboId);
+  if (state.apps.size) q.set('apps', [...state.apps].join(','));
+  history.replaceState(null, '', `?${q}`);
+  store.set('keygap.platform', state.platform);
+  store.set('keygap.apps', [...state.apps].join(','));
 }
 
 // ═══════════════════════════════════════════════════
-// PLATFORM TOGGLE
+// LOOKUP (same precedence as the MCP: OS, then apps, then "sometimes used")
 // ═══════════════════════════════════════════════════
-function initPlatformToggle() {
-  const btns = document.querySelectorAll('.platform-btn');
-  const slider = document.getElementById('platformSlider');
-  btns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      const newPlatform = btn.dataset.platform;
-      if (newPlatform === platform) return;
-
-      const oldPlatform = platform;
-      platform = newPlatform;
-      currentCombo = 0;
-      activeApps.clear();
-
-      btns.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      slider.classList.toggle('right', newPlatform === 'win');
-
-      // Wipe animation
-      const kb = document.getElementById('keyboard');
-      const direction = newPlatform === 'win' ? 'left' : 'right';
-      kb.classList.add(`wipe-out-${direction}`);
-
-      setTimeout(() => {
-        buildTabs();
-        buildAppGrid();
-        renderKeyboard();
-        kb.classList.remove(`wipe-out-${direction}`);
-        kb.classList.add(`wipe-in-${direction}`);
-        setTimeout(() => kb.classList.remove(`wipe-in-${direction}`), 450);
-      }, 300);
-    });
+function lookup(c, key) {
+  const claims = activeApps().flatMap(a => {
+    const action = a[state.platform]?.[c.id]?.[key];
+    return action ? [{ app: a, action }] : [];
   });
+  if (c.taken[key]) return { status: 'taken', reason: c.taken[key], claims };
+  if (claims.length) return { status: 'app', claims };
+  if (c.risky[key]) return { status: 'risky', reason: c.risky[key], claims };
+  return { status: 'free', claims };
 }
-
-// ═══════════════════════════════════════════════════
-// TABS
-// ═══════════════════════════════════════════════════
-function buildTabs() {
-  const combos = getCombos();
-  const bar = document.getElementById('tabBar');
-  bar.innerHTML = combos.map((mc, i) =>
-    `<div class="tab ${i===0?'active':''}" data-idx="${i}"><kbd>${mc.tabLabel}</kbd> + Key</div>`
-  ).join('');
-  bar.querySelectorAll('.tab').forEach(t => {
-    t.addEventListener('click', () => {
-      currentCombo = parseInt(t.dataset.idx);
-      bar.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
-      t.classList.add('active');
-      renderKeyboard();
-    });
-  });
+function freeKeys(c) { return KEYGAP_DATA.keys.filter(k => lookup(c, k).status === 'free'); }
+function comboName(c) { return c.mods.map(m => MOD_NAME[m]).join('+'); }
+function shortcut(c, key) {
+  if (state.platform === 'win') return `${c.tabLabel}+${key}`;
+  return key.length > 1 && KEY_NAME[key] ? `${c.tabLabel} ${key}` : `${c.tabLabel}${key}`;
 }
-
-// ═══════════════════════════════════════════════════
-// APP GRID
-// ═══════════════════════════════════════════════════
-function buildAppGrid() {
-  const grid = document.getElementById('appGrid');
-  const n = apps.length;
-
-  // Find best column count: prefer perfect rectangle, then allow 1 gap
-  function bestCols(count) {
-    for (const c of [5, 4, 3, 6]) { if (count % c === 0) return c; }
-    for (const c of [5, 4, 3, 6]) { if (count % c >= c - 1) return c; }
-    return 5; // fallback
-  }
-  const cols = bestCols(n);
-  grid.style.gridTemplateColumns = `repeat(${cols}, 72px)`;
-
-  grid.innerHTML = apps.map(app => {
-    const avail = app.platforms.includes(platform);
-    const unavailClass = avail ? '' : ' unavailable';
-    const badge = !avail ? `<div class="platform-badge">macOS only</div>` : '';
-    return `
-      <div class="app-card${unavailClass}" data-app="${app.id}" title="${app.name}">
-        <div class="iso-icon">
-          <div class="iso-left iso-face" style="background:${app.color}"></div>
-          <div class="iso-right iso-face" style="background:${app.color}"></div>
-          <div class="iso-top iso-face" style="background:${app.color}">${app.icon}</div>
-        </div>
-        <div class="app-label">${app.name}</div>
-        ${badge}
-        <div class="app-count" data-countfor="${app.id}"></div>
-      </div>`;
-  }).join('');
-  grid.querySelectorAll('.app-card:not(.unavailable)').forEach(card => {
-    card.addEventListener('click', () => {
-      const id = card.dataset.app;
-      if (activeApps.has(id)) { activeApps.delete(id); card.classList.remove('active'); }
-      else { activeApps.add(id); card.classList.add('active'); }
-      renderKeyboard();
-    });
-  });
+function listWords(items) {
+  if (items.length <= 1) return items.join('');
+  return `${items.slice(0, -1).join(', ')} and ${items[items.length - 1]}`;
 }
-
-// ═══════════════════════════════════════════════════
-// APP CLAIMS
-// ═══════════════════════════════════════════════════
-function getAppClaims(keyId, comboId) {
-  const claims = [];
-  for (const appId of activeApps) {
-    const app = apps.find(a => a.id === appId);
-    const platformData = app[platform] || {};
-    const shortcuts = platformData[comboId] || {};
-    if (shortcuts[keyId]) {
-      claims.push({ name: app.name, reason: shortcuts[keyId], color: app.color });
-    }
-  }
-  return claims;
-}
+function esc(s) { return String(s).replace(/[&<>"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[ch]); }
 
 // ═══════════════════════════════════════════════════
 // RENDER
 // ═══════════════════════════════════════════════════
+const $ = id => document.getElementById(id);
+
+function renderHeader() {
+  document.querySelectorAll('.seg button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.platform === state.platform)));
+}
+
+function renderHeadline() {
+  const c = combo();
+  const n = freeKeys(c).length;
+  const apps = activeApps().map(a => a.name);
+  const withApps = apps.length === 0 ? '' : apps.length <= 2 ? ` with ${listWords(apps)}` : ` with your ${apps.length} apps`;
+  $('headline').textContent = `On ${OS[state.platform]}${withApps}, ${c.tabLabel} leaves ${n} ${n === 1 ? 'key' : 'keys'} free.`;
+}
+
+function renderApps() {
+  $('appChips').innerHTML = appsFor().map(a =>
+    `<button type="button" class="chip" data-app="${a.id}" aria-pressed="${state.apps.has(a.id)}">${esc(a.name)}</button>`
+  ).join('');
+}
+
+function renderTabs() {
+  $('tabs').innerHTML = combos().map(c => {
+    const sel = c.id === state.comboId;
+    const n = freeKeys(c).length;
+    return `<button type="button" role="tab" class="tab" data-combo="${c.id}" aria-selected="${sel}" tabindex="${sel ? 0 : -1}"` +
+      ` aria-controls="keys" aria-label="${comboName(c)}, ${n} free" title="${comboName(c)}">` +
+      `<span>${esc(c.tabLabel)}</span><span class="count">${n}</span></button>`;
+  }).join('');
+}
+
+function keyHtml(c, id, label, top, extraClass = '', style = '') {
+  const r = lookup(c, id);
+  const front = r.claims.length === 0 ? '' : r.claims.length === 1 ? FRONT[r.claims[0].app.id] : `${r.claims.length} apps`;
+  const cls = ['k', r.status, extraClass, front ? 'has-front' : '', state.pinned === id ? 'pinned' : ''].filter(Boolean).join(' ');
+  const statusWord = { free: 'free', taken: `taken by ${OS[state.platform]}`, risky: 'sometimes used', app: 'used by your apps' }[r.status];
+  return `<button type="button" class="${cls}"${style ? ` style="${style}"` : ''} data-key="${esc(id)}" tabindex="-1"` +
+    ` aria-label="${esc(shortcut(c, id))}, ${statusWord}">` +
+    (top ? `<span class="shifted">${esc(top)}</span>` : '') + `<span>${esc(label)}</span>` +
+    (front ? `<span class="front">${esc(front)}</span>` : '') + `</button>`;
+}
+
 function renderKeyboard() {
-  const combos = getCombos();
-  const combo = combos[currentCombo];
-  const modIds = getModifierIds();
-  const kbRows = getRows();
-  const kb = document.getElementById('keyboard');
-  let availCount = 0, riskyCount = 0, takenCount = 0, appCount = 0, total = 0;
-
-  let html = '';
-  kbRows.forEach((row, rowIdx) => {
-    const rowClass = rowIdx >= 3 ? 'kb-row row-bottom' : 'kb-row';
-    html += `<div class="${rowClass}">`;
-    const widthMap = computeRowWidths(row);
-    row.forEach(keyDef => {
-      // null = spacer (for Windows F-row grouping)
-      if (keyDef === null) {
-        html += `<div class="k-spacer" style="width:${SPACER_W}px"></div>`;
-        return;
+  const c = combo();
+  const L = LAYOUT[state.platform];
+  const rows = [L.f, ...alphaRows(state.platform), L.bottom];
+  const focusedKey = keysEl.contains(document.activeElement) ? document.activeElement.dataset.key : null;
+  keysEl.innerHTML = rows.map((row, ri) =>
+    `<div class="row${ri === 0 ? ' f' : ''}">` + row.map(([id, label, top, span]) => {
+      const style = `grid-column: span ${span}`;
+      if (id === null) return `<div style="${style}"></div>`;
+      if (id === 'ARROWS') {
+        return `<div class="arrows" style="${style}">` +
+          ARROWS.map(([aid, glyph, cls]) => keyHtml(c, aid, glyph, null, cls)).join('') + `</div>`;
       }
-      const [id, label, topChar] = keyDef;
-      const widthPx = widthMap.get(id) || U;
-
-      if (modIds.has(id)) {
-        const amod = isActiveMod(id, combo) ? ' active-mod' : '';
-        html += `<div class="k modifier${amod}" style="width:${widthPx}px">${topChar ? `<span class="top-char">${topChar}</span>` : ''}${label}</div>`;
-        return;
+      if (id in MOD_OF) {
+        const held = MOD_OF[id] && c.mods.includes(MOD_OF[id]);
+        return `<div class="mod${held ? ' held' : ''}" style="${style}" aria-hidden="true"><span>${esc(label)}</span>` +
+          (top ? `<span class="word">${esc(top)}</span>` : '') + `</div>`;
       }
+      return keyHtml(c, id, label, top, '', style);
+    }).join('') + `</div>`
+  ).join('');
 
-      total++;
-      let state = 'available', tip = 'Likely available';
-      if (combo.taken[id]) { state = 'taken'; tip = combo.taken[id]; }
-      else if (combo.risky[id]) { state = 'risky'; tip = combo.risky[id]; }
+  // One tab stop for the whole keyboard (roving tabindex)
+  const keys = [...keysEl.querySelectorAll('.k')];
+  const start = keys.find(k => k.dataset.key === (focusedKey || state.pinned)) || keys.find(k => k.dataset.key === 'A');
+  start.tabIndex = 0;
+  if (focusedKey) start.focus({ preventScroll: true });
+}
 
-      const claims = getAppClaims(id, combo.id);
-      let dotsHtml = '';
-      if (claims.length > 0) {
-        if (state === 'available' || state === 'risky') {
-          state = 'app-claimed'; appCount++;
-          tip = claims.map(c => `${c.name}: ${c.reason}`).join(' · ');
-        } else {
-          tip += ' · Also: ' + claims.map(c => `${c.name}: ${c.reason}`).join(', ');
-        }
-        dotsHtml = '<div class="app-dots">' + claims.map(c => `<div class="app-dot" style="background:${c.color}"></div>`).join('') + '</div>';
-      }
+function renderLegend() {
+  const c = combo();
+  const counts = { free: 0, taken: 0, risky: 0, app: 0 };
+  KEYGAP_DATA.keys.forEach(k => counts[lookup(c, k).status]++);
+  const item = (cls, label, n) => `<span class="legend-item"><span class="swatch ${cls}" aria-hidden="true"></span>${label} <strong>${n}</strong></span>`;
+  $('legend').innerHTML = item('free', 'Free', counts.free) + item('app', 'Used by your apps', counts.app) +
+    item('risky', 'Sometimes used', counts.risky) + item('taken', `Taken by ${OS[state.platform]}`, counts.taken);
+  $('ergo').innerHTML = `<strong>${comboName(c)}.</strong> ${esc(c.ergo)}`;
+}
 
-      if (state === 'available') availCount++;
-      else if (state === 'risky') riskyCount++;
-      else if (state === 'taken') takenCount++;
+function renderFreeList() {
+  const c = combo();
+  const free = freeKeys(c);
+  $('freeTitle').textContent = `Free with ${c.tabLabel}`;
+  $('copyFree').hidden = free.length === 0;
+  if (free.length === 0) {
+    const best = combos().find(x => x.id === bestCombo(state.platform));
+    $('freeKeys').innerHTML = `<p class="empty">Nothing is free with ${esc(c.tabLabel)} once your apps are counted. Try ${esc(best.tabLabel)}.</p>`;
+    return;
+  }
+  $('freeKeys').innerHTML = free.map(k => `<kbd>${esc(k)}</kbd>`).join('');
+}
 
-      const topHtml = topChar ? `<span class="top-char">${topChar}</span>` : '';
-      html += `<div class="k ${state}" style="width:${widthPx}px" data-tooltip="${tip.replace(/"/g,'&quot;')}">${topHtml}${label}${dotsHtml}</div>`;
-    });
-    html += '</div>';
-  });
-  kb.innerHTML = html;
+function describe(c, key) {
+  const r = lookup(c, key);
+  const os = OS[state.platform];
+  const appNames = activeApps().map(a => a.name);
+  const uses = r.claims.map(x => `${x.app.name} (${x.action})`);
+  let text;
+  if (r.status === 'free') {
+    text = appNames.length ? `Free. ${listWords([os, ...appNames])} don't use it.` : `Free. ${os} doesn't use it. Pick your apps above to check them too.`;
+  } else if (r.status === 'taken') {
+    // "Taken by Windows: Color filters (system)" says "system" twice
+    text = `Taken by ${os}: ${r.reason.replace(/ \(system\)$/, '')}.` + (uses.length ? ` Also used by ${listWords(uses)}.` : '');
+  } else if (r.status === 'app') {
+    text = `Used by ${listWords(uses)}.`;
+  } else {
+    text = `Sometimes used: ${r.reason}.`;
+  }
+  return { text, html: `<kbd>${esc(shortcut(c, key))}</kbd>${esc(text)}` };
+}
 
-  document.getElementById('stats').innerHTML = `
-    <div><span class="num green">${availCount}</span> available</div>
-    ${appCount > 0 ? `<div><span class="num blue">${appCount}</span> app-claimed</div>` : ''}
-    <div><span class="num orange">${riskyCount}</span> risky</div>
-    <div><span class="num grey">${takenCount}</span> taken</div>
-    <div>of ${total} assignable keys</div>
-  `;
-  document.getElementById('ergoNote').textContent = '⌨️ ' + combo.ergo;
+function renderInspector(key = state.pinned) {
+  if (recording) return;
+  $('inspectText').innerHTML = key
+    ? describe(combo(), key).html
+    : `<span class="muted">Point at or tap a key to see what uses it.</span>`;
+}
 
-  apps.forEach(app => {
-    const el = document.querySelector(`[data-countfor="${app.id}"]`);
-    if (!el) return;
-    const platformData = app[platform] || {};
-    const sc = platformData[combo.id] || {};
-    const n = Object.keys(sc).length;
-    el.textContent = n > 0 ? `${n} keys` : '';
+function renderAll() {
+  renderHeader(); renderHeadline(); renderApps(); renderTabs(); renderKeyboard(); renderLegend(); renderFreeList(); renderInspector();
+  saveState();
+}
+
+// ═══════════════════════════════════════════════════
+// INTERACTION
+// ═══════════════════════════════════════════════════
+const keysEl = $('keys');
+
+function setPlatform(p) {
+  if (p === state.platform) return;
+  stopRecording();
+  state.platform = p;
+  state.comboId = bestCombo(p);
+  state.pinned = null;
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return renderAll();
+  $('case').classList.add('swap');
+  setTimeout(() => { renderAll(); $('case').classList.remove('swap'); }, 150);
+}
+
+function setCombo(id, focusTab) {
+  state.comboId = id;
+  renderAll();
+  if (focusTab) $('tabs').querySelector(`[data-combo="${id}"]`).focus();
+}
+
+document.querySelectorAll('.seg button').forEach(b => b.addEventListener('click', () => setPlatform(b.dataset.platform)));
+
+$('appChips').addEventListener('click', e => {
+  const chip = e.target.closest('.chip');
+  if (!chip) return;
+  const id = chip.dataset.app;
+  state.apps.has(id) ? state.apps.delete(id) : state.apps.add(id);
+  renderAll();
+  $('appChips').querySelector(`[data-app="${id}"]`).focus();
+});
+
+$('tabs').addEventListener('click', e => {
+  const tab = e.target.closest('.tab');
+  if (tab) setCombo(tab.dataset.combo, true);
+});
+$('tabs').addEventListener('keydown', e => {
+  const ids = combos().map(c => c.id);
+  const i = ids.indexOf(state.comboId);
+  const next = { ArrowRight: i + 1, ArrowLeft: i - 1, Home: 0, End: ids.length - 1 }[e.key];
+  if (next === undefined) return;
+  e.preventDefault();
+  setCombo(ids[(next + ids.length) % ids.length], true);
+});
+
+// Keys: hover and focus preview, click pins, arrows move focus
+keysEl.addEventListener('mouseover', e => { const k = e.target.closest('.k'); if (k) renderInspector(k.dataset.key); });
+keysEl.addEventListener('mouseleave', () => renderInspector());
+keysEl.addEventListener('focusin', e => {
+  const k = e.target.closest('.k');
+  if (!k) return;
+  keysEl.querySelectorAll('.k').forEach(x => { x.tabIndex = x === k ? 0 : -1; });
+  renderInspector(k.dataset.key);
+});
+keysEl.addEventListener('click', e => {
+  const k = e.target.closest('.k');
+  if (!k) return;
+  state.pinned = state.pinned === k.dataset.key ? null : k.dataset.key;
+  keysEl.querySelectorAll('.k').forEach(x => x.classList.toggle('pinned', x.dataset.key === state.pinned));
+  renderInspector(k.dataset.key);
+});
+keysEl.addEventListener('keydown', e => {
+  const k = e.target.closest('.k');
+  if (!k || !e.key.startsWith('Arrow')) return;
+  e.preventDefault();
+  const keys = [...keysEl.querySelectorAll('.k')];
+  let target;
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+    target = keys[keys.indexOf(k) + (e.key === 'ArrowRight' ? 1 : -1)];
+  } else {
+    // Nearest key by horizontal centre in the next row up or down
+    const box = k.getBoundingClientRect();
+    const cx = box.left + box.width / 2;
+    const down = e.key === 'ArrowDown';
+    const rects = keys.map(x => [x, x.getBoundingClientRect()]);
+    const beyond = rects.filter(([, b]) => (down ? b.top >= box.bottom - 1 : b.bottom <= box.top + 1));
+    if (beyond.length) {
+      const rowTop = (down ? Math.min : Math.max)(...beyond.map(([, b]) => b.top));
+      target = beyond
+        .filter(([, b]) => Math.abs(b.top - rowTop) < 4)
+        .sort(([, a], [, b]) => Math.abs(a.left + a.width / 2 - cx) - Math.abs(b.left + b.width / 2 - cx))[0][0];
+    }
+  }
+  target?.focus();
+});
+
+// ── Copy ──
+function copy(btn, text) {
+  navigator.clipboard?.writeText(text).then(() => {
+    const was = btn.textContent;
+    btn.textContent = 'Copied';
+    setTimeout(() => { btn.textContent = was; }, 1500);
   });
 }
+$('copyFree').addEventListener('click', e => { const c = combo(); copy(e.currentTarget, freeKeys(c).map(k => shortcut(c, k)).join(', ')); });
+$('copyMcp').addEventListener('click', e => copy(e.currentTarget, $('mcpUrl').textContent));
+$('copyCmd').addEventListener('click', e => copy(e.currentTarget, $('mcpCmd').textContent));
+
+// ── Panels (native <dialog> handles focus trapping, Esc and focus return) ──
+document.querySelectorAll('[data-open]').forEach(b => b.addEventListener('click', () => $(`${b.dataset.open}Panel`).showModal()));
+document.querySelectorAll('dialog.panel').forEach(d => {
+  d.querySelector('.close').addEventListener('click', () => d.close());
+  d.addEventListener('click', e => { if (e.target === d) d.close(); });
+});
+
+// ═══════════════════════════════════════════════════
+// RECORDER: press a shortcut to check it.
+// Armed only after an explicit click, because the page can't stop shortcuts like ⌘Q.
+// ═══════════════════════════════════════════════════
+const CODE_TO_KEY = { Minus: '-', Equal: '=', BracketLeft: '[', BracketRight: ']', Backslash: '\\', Semicolon: ';', Quote: "'",
+  Comma: ',', Period: '.', Slash: '/', Backquote: '`', Space: 'Space', Enter: 'Return', NumpadEnter: 'Return',
+  Backspace: 'Delete', Delete: 'Delete', Tab: 'Tab', Escape: 'Esc',
+  ArrowUp: 'Up', ArrowDown: 'Down', ArrowLeft: 'Left', ArrowRight: 'Right' };
+const MOD_CODES = /^(Meta|OS|Control|Alt|Shift)(Left|Right)?$|^CapsLock$|^Fn/;
+const MAC_GLYPH = { ctrl: '⌃', opt: '⌥', shift: '⇧', cmd: '⌘' };
+let recording = false;
+
+// e.code is the physical key; e.key would be "˚" for ⌥K on a Mac
+function keyFromCode(code) {
+  if (/^Key[A-Z]$/.test(code)) return code.slice(3);
+  if (/^Digit\d$/.test(code)) return code.slice(5);
+  if (/^F([1-9]|1[0-2])$/.test(code)) return code;
+  return CODE_TO_KEY[code];
+}
+function heldMods(e) {
+  const mac = state.platform === 'mac';
+  const mods = [];
+  if (e.metaKey) mods.push(mac ? 'cmd' : 'win');
+  if (e.ctrlKey) mods.push('ctrl');
+  if (e.altKey) mods.push(mac ? 'opt' : 'alt');
+  if (e.shiftKey) mods.push('shift');
+  return mods;
+}
+function modsLabel(mods) {
+  if (state.platform === 'mac') return Object.keys(MAC_GLYPH).filter(m => mods.includes(m)).map(m => MAC_GLYPH[m]).join('');
+  return mods.map(m => MOD_NAME[m]).join('+');
+}
+function setInspect(html) { $('inspectText').innerHTML = html; }
+function bestLabel() { return combos().find(c => c.id === bestCombo(state.platform)).tabLabel; }
+
+function guardUnload(e) { e.preventDefault(); e.returnValue = ''; }
+
+function startRecording() {
+  recording = true;
+  $('recorder').setAttribute('aria-pressed', 'true');
+  $('recorder').textContent = 'Stop checking';
+  $('inspector').classList.add('listening');
+  setInspect(`<span class="muted">Listening. Try ${esc(bestLabel())} + any letter. Esc stops.</span>`);
+  $('recordHelp').textContent = state.platform === 'mac'
+    ? `⌘Q, ⌘W and ⌘H go straight to macOS or your browser, so they're taken. Click those keys instead to see why. If nothing happens when you press a shortcut, macOS or your browser already owns it.`
+    : `Alt+F4, Win+L and Ctrl+Alt+Del go straight to Windows, so they're taken. Click those keys instead to see why. If nothing happens when you press a shortcut, Windows or your browser already owns it.`;
+  $('recordHelp').hidden = false;
+  window.addEventListener('beforeunload', guardUnload);
+}
+function stopRecording() {
+  if (!recording) return;
+  recording = false;
+  $('recorder').setAttribute('aria-pressed', 'false');
+  $('recorder').textContent = 'Check a shortcut by pressing it';
+  $('inspector').classList.remove('listening');
+  $('recordHelp').hidden = true;
+  window.removeEventListener('beforeunload', guardUnload);
+  renderInspector();
+}
+
+function checkPressed(e) {
+  const mods = heldMods(e);
+  if (MOD_CODES.test(e.code)) {
+    if (mods.length) setInspect(`<kbd>${esc(modsLabel(mods))}</kbd><span class="muted">and a key…</span>`);
+    return;
+  }
+  const key = keyFromCode(e.code);
+  if (!key) return setInspect(`<span class="muted">KeyGap doesn't track that key. Try a letter, digit, F-key or arrow.</span>`);
+  if (mods.length === 0) return setInspect(`<span class="muted">Add a modifier. KeyGap checks shortcuts like ${esc(bestLabel())}K.</span>`);
+
+  const match = combos().find(c => c.mods.length === mods.length && c.mods.every(m => mods.includes(m)));
+  if (!match) {
+    const msg = `KeyGap doesn't cover ${modsLabel(mods)} yet.`;
+    setInspect(`<kbd>${esc(modsLabel(mods))}${state.platform === 'mac' ? '' : '+'}${esc(key)}</kbd>${esc(msg)}`);
+    $('announce').textContent = msg;
+    return;
+  }
+  state.comboId = match.id;
+  state.pinned = key;
+  renderHeadline(); renderTabs(); renderKeyboard(); renderLegend(); renderFreeList(); saveState();
+  const { text, html } = describe(match, key);
+  setInspect(html);
+  $('announce').textContent = `${shortcut(match, key)}. ${text}`;
+  const cap = keysEl.querySelector(`.k[data-key="${CSS.escape(key)}"]`);
+  if (cap) { cap.classList.remove('flash'); void cap.offsetWidth; cap.classList.add('flash'); }
+}
+
+$('recorder').addEventListener('click', () => (recording ? stopRecording() : startRecording()));
+$('recorder').addEventListener('blur', stopRecording);
+window.addEventListener('keydown', e => {
+  if (!recording) return;
+  if (e.key === 'Escape' && !e.metaKey && !e.ctrlKey && !e.altKey && !e.shiftKey) {
+    e.preventDefault();
+    stopRecording();
+    return;
+  }
+  e.preventDefault();
+  e.stopPropagation();
+  if (!e.repeat) checkPressed(e);
+}, true);
+// Space and Enter would otherwise "click" the focused recorder button on keyup
+window.addEventListener('keyup', e => { if (recording) e.preventDefault(); }, true);
 
 // ═══════════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════════
-initPlatformToggle();
-buildTabs();
-buildAppGrid();
-renderKeyboard();
+loadState();
+renderAll();
 </script>
 </body>
 </html>
