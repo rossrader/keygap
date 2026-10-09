@@ -49,6 +49,22 @@ claude mcp add --transport http keygap https://keygap.app/mcp
 
 Shortcut data was last checked against each vendor's documentation in October 2026. Apps change their defaults, so [open an issue](https://github.com/rossrader/keygap/issues) if something's wrong.
 
+## Release notes
+
+### October 2026
+
+- New keyboard design: light page, graphite keyboard, keys styled by status.
+- Press a key combo and see if it's free. It now works the way you'd expect.
+- Opens on the least-used modifier combo, with free-key counts on every tab.
+- Lists free keys, with a copy button.
+- Shareable links that remember your platform, combo and apps.
+- Works on phones.
+- Usable from the keyboard, with improved screen-reader support and contrast.
+- 19 apps, up from 12, and Arc and Warp now cover Windows.
+- Shortcut data checked against vendor docs, with 606 corrections.
+- MCP endpoint updated to the current protocol, with two new tools: `list_apps` and `list_combos`.
+- Smoke tests and request logs added.
+
 ## Development
 
 ```bash
