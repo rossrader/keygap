@@ -203,6 +203,34 @@ function createServer() {
     },
   );
 
+  server.registerTool(
+    'list_apps',
+    {
+      title: 'List apps',
+      description: 'Lists the apps KeyGap knows, with their IDs and platforms. Use the IDs for the apps parameter of the other tools.',
+      inputSchema: z.object({ platform: platformSchema.optional().describe('Optional. Only list apps on this platform.') }),
+      annotations: { readOnlyHint: true, openWorldHint: false },
+    },
+    async ({ platform }) =>
+      json(apps.filter((a) => !platform || a.platforms.includes(platform)).map((a) => ({ id: a.id, name: a.name, platforms: a.platforms }))),
+  );
+
+  server.registerTool(
+    'list_combos',
+    {
+      title: 'List modifier combos',
+      description: 'Lists the modifier combos KeyGap tracks on a platform, best first, with their labels and ergonomics notes.',
+      inputSchema: z.object({ platform: platformSchema }),
+      annotations: { readOnlyHint: true, openWorldHint: false },
+    },
+    async ({ platform }) =>
+      json(
+        [...combos[platform]]
+          .sort((a, b) => a.rank - b.rank)
+          .map((c) => ({ id: c.id, label: c.tabLabel, modifiers: c.mods, ergonomics: c.ergo })),
+      ),
+  );
+
   return server;
 }
 

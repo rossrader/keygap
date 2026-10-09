@@ -1057,5 +1057,251 @@ export const apps: AppShortcuts[] = [
         "F": "Toggle search"
       }
     }
+  },
+  {
+    "id": "firefox",
+    "name": "Firefox",
+    "platforms": [
+      "mac",
+      "win"
+    ],
+    "mac": {
+      "cmd": {
+        "K": "Focus search box",
+        "L": "Address bar",
+        "D": "Bookmark page",
+        "B": "Bookmarks",
+        "H": "History"
+      },
+      "cmd-shift": {
+        "T": "Reopen tab",
+        "H": "History sidebar",
+        "D": "Bookmark all tabs",
+        "B": "Toggle sidebar",
+        "R": "Reader view",
+        "\\": "Tab overview"
+      },
+      "cmd-opt": {
+        "I": "DevTools",
+        "K": "Web Console",
+        "J": "Browser Console",
+        "Z": "Debugger",
+        "S": "Style Editor"
+      },
+      "cmd-ctrl": {
+        "F": "Fullscreen"
+      },
+      "cmd-ctrl-shift": {
+        "I": "Browser Toolbox"
+      }
+    },
+    "win": {
+      "ctrl": {
+        "K": "Focus search box",
+        "L": "Address bar",
+        "D": "Bookmark page",
+        "B": "Bookmarks",
+        "H": "History"
+      },
+      "ctrl-shift": {
+        "T": "Reopen tab",
+        "I": "DevTools",
+        "K": "Web Console",
+        "J": "Browser Console",
+        "P": "Private window",
+        "D": "Bookmark all tabs",
+        "B": "Toggle sidebar",
+        "M": "Responsive design mode"
+      }
+    }
+  },
+  {
+    "id": "safari",
+    "name": "Safari",
+    "platforms": [
+      "mac"
+    ],
+    "mac": {
+      "cmd": {
+        "F": "Find on page",
+        "L": "Smart Search field"
+      },
+      "cmd-shift": {
+        "H": "Go to homepage",
+        "T": "Reopen last tab",
+        "D": "Add to Reading List",
+        "R": "Open Reader",
+        "\\": "Tab overview"
+      },
+      "cmd-ctrl": {
+        "1": "Bookmarks sidebar",
+        "2": "Reading List sidebar"
+      }
+    },
+    "win": {}
+  },
+  {
+    "id": "discord",
+    "name": "Discord",
+    "platforms": [
+      "mac",
+      "win"
+    ],
+    "mac": {
+      "cmd": {
+        "K": "Quick switcher",
+        "P": "Toggle pins",
+        "U": "Member list",
+        "E": "Emoji picker",
+        "/": "Keyboard shortcuts"
+      },
+      "cmd-shift": {
+        "N": "Create/join server",
+        "M": "Mute microphone",
+        "D": "Toggle deafen",
+        "U": "Upload file"
+      },
+      "cmd-opt": {
+        "Up": "Previous server",
+        "Down": "Next server"
+      }
+    },
+    "win": {
+      "ctrl": {
+        "K": "Quick switcher",
+        "F": "Search channel",
+        "E": "Emoji picker",
+        "U": "Member list",
+        "/": "Keyboard shortcuts"
+      },
+      "ctrl-shift": {
+        "N": "Create/join server",
+        "M": "Mute microphone",
+        "D": "Toggle deafen",
+        "U": "Upload file"
+      },
+      "ctrl-alt": {
+        "Up": "Previous server",
+        "Down": "Next server"
+      }
+    }
+  },
+  {
+    "id": "superhuman",
+    "name": "Superhuman",
+    "platforms": [
+      "mac",
+      "win"
+    ],
+    "mac": {
+      "cmd": {
+        "K": "Superhuman Command",
+        "/": "Search"
+      },
+      "cmd-shift": {
+        "O": "To field",
+        "C": "CC field",
+        "B": "BCC field",
+        "F": "From field",
+        "S": "Edit subject",
+        "A": "Attach file"
+      }
+    },
+    "win": {
+      "ctrl": {
+        "K": "Superhuman Command",
+        "/": "Search"
+      },
+      "ctrl-shift": {
+        "O": "To field",
+        "C": "CC field",
+        "B": "BCC field",
+        "F": "From field",
+        "S": "Edit subject",
+        "A": "Attach file"
+      }
+    }
+  },
+  {
+    "id": "terminal",
+    "name": "Terminal",
+    "platforms": [
+      "mac"
+    ],
+    "mac": {
+      "cmd": {
+        "N": "New window",
+        "T": "New tab",
+        "D": "Split pane",
+        "K": "Clear to previous mark"
+      },
+      "cmd-shift": {
+        "D": "Close split pane",
+        "I": "Edit title",
+        "M": "Insert bookmark"
+      }
+    },
+    "win": {}
+  },
+  {
+    "id": "iterm",
+    "name": "iTerm2",
+    "platforms": [
+      "mac"
+    ],
+    "mac": {
+      "cmd": {
+        "D": "Split vertically",
+        "T": "New tab",
+        "N": "New window",
+        "K": "Clear buffer",
+        "W": "Close tab"
+      },
+      "cmd-shift": {
+        "D": "Split horizontally",
+        "Return": "Maximize pane",
+        "M": "Mark location",
+        "J": "Jump to mark"
+      },
+      "cmd-opt": {
+        "Up": "Navigate up pane",
+        "Down": "Navigate down pane",
+        "Left": "Navigate left pane",
+        "Right": "Navigate right pane"
+      }
+    },
+    "win": {}
+  },
+  {
+    "id": "warp",
+    "name": "Warp",
+    "platforms": [
+      "mac"
+    ],
+    "mac": {
+      "cmd": {
+        "D": "Split right",
+        "K": "Clear blocks",
+        "P": "Command palette",
+        "O": "File search",
+        "/": "Keyboard shortcuts",
+        "B": "Bookmark block"
+      },
+      "cmd-shift": {
+        "D": "Split down",
+        "Return": "Maximize pane",
+        "C": "Copy command",
+        "P": "Navigation palette",
+        "T": "Reopen closed tab",
+        "K": "Clear selected lines"
+      },
+      "cmd-opt": {
+        "Up": "Switch pane up",
+        "Down": "Switch pane down",
+        "Left": "Switch pane left",
+        "Right": "Switch pane right"
+      }
+    },
+    "win": {}
   }
 ];
