@@ -1,84 +1,12 @@
 import { McpServer } from '@modelcontextprotocol/server';
 import { createMcpHandler } from 'agents/mcp/server';
 import { z } from 'zod';
-import { apps, combos, keys, type ModifierCombo, type Platform } from './data';
+import { apps, combos, keys, dataset, sources, type ModifierCombo } from './catalog';
+import type { Platform } from './data';
+import { lookup, selectedApps } from './domain';
+import { resolveCombo, resolveKey } from './normalize';
 
 type Status = 'available' | 'taken' | 'risky' | 'app-claimed';
-
-interface KeyResult {
-  key: string;
-  status: Status;
-  reason?: string;
-  claimed_by?: { app: string; action: string }[];
-}
-
-// ── Input normalization ─────────────────────────────
-
-const MOD_ALIASES: Record<string, string> = {
-  cmd: 'cmd', command: 'cmd', '⌘': 'cmd', meta: 'cmd',
-  ctrl: 'ctrl', control: 'ctrl', '⌃': 'ctrl',
-  opt: 'opt', option: 'opt', alt: 'alt', '⌥': 'opt',
-  shift: 'shift', '⇧': 'shift',
-  win: 'win', windows: 'win', super: 'win', '⊞': 'win',
-};
-
-/** Accepts combo IDs ("cmd-ctrl") or looser forms ("Ctrl+Cmd", "⌘⌃", "command control"). */
-function resolveCombo(platform: Platform, input: string): ModifierCombo | undefined {
-  const list = combos[platform];
-  const exact = list.find((c) => c.id === input.toLowerCase());
-  if (exact) return exact;
-  const parts = input.toLowerCase().replace(/([⌘⌃⌥⇧⊞])/g, ' $1 ').split(/[\s+\-_,]+/).filter(Boolean);
-  const mods = new Set(
-    parts.map((p) => {
-      const m = MOD_ALIASES[p];
-      if (platform === 'mac' && m === 'alt') return 'opt';
-      if (platform === 'win' && m === 'opt') return 'alt';
-      if (platform === 'win' && m === 'cmd') return 'win';
-      return m;
-    }),
-  );
-  if (mods.has(undefined as unknown as string)) return undefined;
-  return list.find((c) => c.mods.length === mods.size && c.mods.every((m) => mods.has(m)));
-}
-
-const KEY_ALIASES: Record<string, string> = {
-  enter: 'Return', return: 'Return', backspace: 'Delete', delete: 'Delete', del: 'Delete',
-  space: 'Space', spacebar: 'Space', escape: 'Esc', esc: 'Esc', tab: 'Tab',
-  up: 'Up', arrowup: 'Up', down: 'Down', arrowdown: 'Down',
-  left: 'Left', arrowleft: 'Left', right: 'Right', arrowright: 'Right',
-  backtick: '`', grave: '`', minus: '-', equals: '=', comma: ',', period: '.', slash: '/',
-  backslash: '\\', semicolon: ';', quote: "'", bracketleft: '[', bracketright: ']',
-};
-
-function resolveKey(input: string): string | undefined {
-  const k = input.trim();
-  const alias = KEY_ALIASES[k.toLowerCase().replace(/\s+/g, '')];
-  if (alias) return alias;
-  return keys.find((x) => x.toLowerCase() === k.toLowerCase());
-}
-
-// ── Lookup ──────────────────────────────────────────
-
-function selectedApps(platform: Platform, ids: string[] = []) {
-  const chosen = apps.filter((a) => ids.includes(a.id));
-  const unsupported = chosen.filter((a) => !a.platforms.includes(platform)).map((a) => a.name);
-  return { chosen: chosen.filter((a) => a.platforms.includes(platform)), unsupported };
-}
-
-function lookup(platform: Platform, combo: ModifierCombo, key: string, appIds: string[]): KeyResult {
-  const { chosen } = selectedApps(platform, appIds);
-  const claims = chosen.flatMap((a) => {
-    const action = a[platform][combo.id]?.[key];
-    return action ? [{ app: a.name, action }] : [];
-  });
-  // Same precedence as the visual keyboard: the OS wins, then apps, then "sometimes used".
-  if (combo.taken[key]) {
-    return { key, status: 'taken', reason: combo.taken[key], ...(claims.length && { claimed_by: claims }) };
-  }
-  if (claims.length) return { key, status: 'app-claimed', reason: claims.map((c) => `${c.app}: ${c.action}`).join('; '), claimed_by: claims };
-  if (combo.risky[key]) return { key, status: 'risky', reason: combo.risky[key] };
-  return { key, status: 'available' };
-}
 
 /** Letters first, then digits, punctuation, F-keys and named keys: the easiest to remember come first. */
 function keyPreference(key: string): number {
@@ -125,7 +53,7 @@ function createServer() {
     {
       title: 'List free keys for a modifier combo',
       description:
-        'Lists every key on the keyboard for one modifier combo, with its status: available, taken (by the OS), ' +
+        'Lists every tracked key for one modifier combo: available (no known conflict, not a guarantee), taken (system reservation), ' +
         'risky (sometimes used), or app-claimed (by one of the given apps). Use it to see what a combo leaves free.',
       inputSchema: z.object({ platform: platformSchema, modifier_combo: z.string().describe(comboHelp), apps: appsSchema }),
       annotations: { readOnlyHint: true, openWorldHint: false },
@@ -137,6 +65,7 @@ function createServer() {
       const count = (s: Status) => results.filter((r) => r.status === s).length;
       return json({
         platform,
+        dataset, sources,
         modifier_combo: combo.id,
         modifier_label: combo.tabLabel,
         ergonomics: combo.ergo,
@@ -151,7 +80,7 @@ function createServer() {
     'check_key',
     {
       title: 'Check one shortcut',
-      description: 'Checks whether one shortcut (modifier combo + key) is free, and says what claims it if not.',
+      description: 'Checks recorded conflicts for one shortcut. Available means no known conflict within partial coverage, not verified absence. Backspace deletes backward (Mac delete key); Delete deletes forward.',
       inputSchema: z.object({
         platform: platformSchema,
         modifier_combo: z.string().describe(comboHelp),
@@ -164,8 +93,8 @@ function createServer() {
       const combo = resolveCombo(platform, modifier_combo);
       if (!combo) return unknownCombo(platform, modifier_combo);
       const k = resolveKey(key);
-      if (!k) return fail(`"${key}" isn't a key KeyGap tracks. Use a letter, digit, punctuation key, F1–F12, Esc, Tab, Space, Return, Delete or an arrow.`);
-      return json({ ...lookup(platform, combo, k, appIds), shortcut: label(platform, combo, k), ignored_apps: selectedApps(platform, appIds).unsupported });
+      if (!k) return fail(`"${key}" isn't a key KeyGap tracks. Use a letter, digit, punctuation key, F1–F12, Esc, Tab, Space, Return, Backspace, Delete (forward delete) or an arrow.`);
+      return json({ ...lookup(platform, combo, k, appIds), dataset, sources, shortcut: label(platform, combo, k), ignored_apps: selectedApps(platform, appIds).unsupported });
     },
   );
 
@@ -175,7 +104,7 @@ function createServer() {
       title: 'Suggest free hotkeys',
       description:
         'Suggests shortcuts that are free given the apps someone uses. Prefers the requested modifier combo, then ' +
-        'the combos that are least crowded and easiest to press, and letter keys over symbols.',
+        'static combo recommendation rank, then letter keys over symbols. No known conflict is not a guarantee; coverage is partial.',
       inputSchema: z.object({
         platform: platformSchema,
         count: z.number().int().min(1).max(50).describe('How many shortcuts are needed'),
@@ -199,7 +128,7 @@ function createServer() {
         }
         if (suggestions.length >= count) break;
       }
-      return json({ platform, suggestions, ignored_apps: selectedApps(platform, appIds).unsupported });
+      return json({ platform, dataset, sources, suggestions, ignored_apps: selectedApps(platform, appIds).unsupported });
     },
   );
 

@@ -6,16 +6,27 @@
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
     "typecheck": "tsc --noEmit",
-    "test": "node scripts/smoke.mjs",
+    "test": "npm run test:unit && npm run test:integration",
+    "test:unit": "node --test scripts/unit.test.mjs",
+    "test:integration": "node scripts/smoke.mjs",
+    "test:browser": "playwright test",
+    "validate": "npm run typecheck && npm test && npm run test:browser",
     "test:prod": "BASE_URL=https://keygap.app node scripts/smoke.mjs"
+  },
+  "engines": { "node": ">=22.18.0 <23" },
+  "overrides": {
+    "@modelcontextprotocol/client": "^2.3.1",
+    "@modelcontextprotocol/sdk": "^1.32.1"
   },
   "dependencies": {
     "@modelcontextprotocol/server": "^2.0.0",
-    "agents": "^0.27.0",
+    "agents": "^0.28.0",
     "zod": "^4.6.5"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
     "@cloudflare/workers-types": "^5.20261008.1",
+    "@playwright/test": "^1.64.0",
     "typescript": "^7.0.2",
     "wrangler": "^4.149.0"
   }

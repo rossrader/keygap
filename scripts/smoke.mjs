@@ -3,9 +3,11 @@
 //   npm run test:prod      tests https://keygap.app
 //   BASE_URL=... npm test  tests any running instance
 import { spawn } from 'node:child_process';
-import { apps, combos, keys } from '../src/data.ts';
+import { apps, combos, keys } from '../src/catalog.ts';
 
 const PORT = 8799;
+const nativeFetch = globalThis.fetch;
+const fetch = (url, options = {}) => nativeFetch(url, { ...options, signal: AbortSignal.timeout(10000) });
 let failures = 0;
 function check(name, ok, detail = '') {
   console.log(`${ok ? 'ok  ' : 'FAIL'}  ${name}${ok || !detail ? '' : `  (${detail})`}`);
@@ -39,8 +41,12 @@ for (const a of apps) {
 let server;
 const base = process.env.BASE_URL || `http://localhost:${PORT}`;
 if (!process.env.BASE_URL) {
-  server = spawn('npx', ['wrangler', 'dev', '--port', String(PORT)], { stdio: 'ignore', detached: true });
+  server = spawn('npx', ['wrangler', 'dev', '--port', String(PORT)], { stdio: ['ignore', 'pipe', 'pipe'], detached: process.platform !== 'win32' });
+  server.stdout.on('data', chunk => { server.output = (server.output || '') + chunk.toString(); });
+  server.stderr.on('data', chunk => { server.output = (server.output || '') + chunk.toString(); });
+  server.on('error', error => { server.startError = error; });
   for (let i = 0; i < 60; i++) {
+    if (server.startError || server.exitCode !== null) break;
     try { if ((await fetch(base)).ok) break; } catch { /* not up yet */ }
     await new Promise((r) => setTimeout(r, 500));
   }
@@ -64,7 +70,9 @@ try {
     return JSON.parse(line ? line.slice(6) : text);
   }
   async function tool(name, args) {
-    const r = (await rpc('tools/call', { name, arguments: args })).result;
+    const response = await rpc('tools/call', { name, arguments: args });
+    if (response.error) return { error: response.error.message };
+    const r = response.result;
     return r.isError ? { error: r.content[0].text } : JSON.parse(r.content[0].text);
   }
 
@@ -87,10 +95,28 @@ try {
   check('list_combos: best combo first', best[0].id === combos.win.find((c) => c.rank === 1).id);
   const bad = await tool('check_key', { platform: 'mac', modifier_combo: 'opt-shift', key: 'K' });
   check('unknown combo returns a clear error', Boolean(bad.error));
+  for (const key of ['Delete', 'del', 'forward delete']) {
+    const result = await tool('check_key', { platform: 'win', modifier_combo: 'Ctrl+Alt', key });
+    check(`forward-delete alias ${key}`, result.status === 'taken');
+  }
+  const backward = await tool('check_key', { platform: 'win', modifier_combo: 'ctrl-alt', key: 'backspace' });
+  check('Backspace is distinct from forward Delete', backward.status === 'available' && backward.dataset.coverage === 'partial');
+  const editor = await tool('check_key', { platform: 'mac', modifier_combo: 'cmd', key: 'B', apps: ['vscode'] });
+  check('app claim outranks convention', editor.status === 'app-claimed' && editor.reason.includes('Toggle sidebar'));
+  const unsupported = await tool('check_key', { platform: 'win', modifier_combo: 'ctrl', key: 'K', apps: ['safari'] });
+  check('unsupported apps are reported', unsupported.ignored_apps.includes('Safari'));
+  const unknownKey = await tool('check_key', { platform: 'mac', modifier_combo: 'cmd', key: 'Home' });
+  check('unsupported keys fail clearly', Boolean(unknownKey.error));
+  for (const suggestion of sugg.suggestions) {
+    const result = await tool('check_key', { platform: 'win', modifier_combo: suggestion.modifier_combo, key: suggestion.key, apps: ['vscode', 'figma'] });
+    check(`suggested ${suggestion.shortcut} has no known conflict`, result.status === 'available');
+  }
 } catch (e) {
-  check('server checks ran', false, e.message);
+  check('server checks ran', false, `${e.message}\n${server?.startError || ''}\n${server?.output || ''}`);
 } finally {
-  if (server) process.kill(-server.pid);
+  if (server?.pid) {
+    try { process.platform === 'win32' ? server.kill() : process.kill(-server.pid); } catch (error) { if (error.code !== 'ESRCH') throw error; }
+  }
 }
 
 console.log(failures ? `\n${failures} failed` : '\nAll checks passed');
