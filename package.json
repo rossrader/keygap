@@ -13,7 +13,7 @@
     "validate": "npm run typecheck && npm test && npm run test:browser",
     "test:prod": "BASE_URL=https://keygap.app node scripts/smoke.mjs"
   },
-  "engines": { "node": ">=22.18.0 <23" },
+  "engines": { "node": ">=22.23.4 <23" },
   "overrides": {
     "@modelcontextprotocol/client": "^2.3.1",
     "@modelcontextprotocol/sdk": "^1.32.1"
